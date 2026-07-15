@@ -187,14 +187,3 @@ export default function BookPageContent({ id }: { id: string }) {
     </div>
   );
 }
-
-export default function BookPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
-  const id = resolvedParams.id;
-
-  return (
-    <Suspense fallback={<div className="text-text-primary p-8 text-center">Loading booking details...</div>}>
-      <BookPageContent id={id} />
-    </Suspense>
-  );
-}
