@@ -1,0 +1,1580 @@
+Start Coding from the server directory to the client.
+use layered architecture on the server side. Don't create unnecessary folders
+Complete all the tasks including writing all the necessary types and interfaces for the models and api.
+Do not leave any mock or dummy Implementation, all implementation should be real and functional.
+
+
+Do not run install commands, just update the package.json file.
+
+Swift Wings System - CONOPS & SRS
+
+
+Document Overview
+Attribute	Value
+Project	Swift Wings System
+Purpose	Provide flight search and booking redirection service
+Version	1.0
+Date	2026-07-14
+Status	Draft
+Design Theme
+Color Palette
+Element	Color	Hex Code	Usage
+Primary Background	Slate	#1E293B	Main background, containers
+Secondary Background	Dark Slate	#0F172A	Cards, modals, form backgrounds
+Accent Color	Oxblood Red	#4A0404	Primary buttons, headers, highlights
+Accent Hover	Bright Oxblood	#6B0F0F	Button hover states, interactive elements
+Text Primary	White	#FFFFFF	Headings, main text
+Text Secondary	Light Gray	#94A3B8	Subheadings, descriptions, metadata
+Borders	Slate Gray	#334155	Dividers, input borders, card borders
+Success	Emerald	#10B981	Confirmation, completed status
+Warning	Amber	#F59E0B	Pending, processing status
+Error	Red	#EF4444	Errors, failed status
+Typography
+Element	Font	Weight	Size
+Headings	Inter	Bold	2rem - 3.5rem
+Subheadings	Inter	Semibold	1.25rem - 1.75rem
+Body Text	Inter	Regular	1rem
+Small Text	Inter	Regular	0.875rem
+Code	JetBrains Mono	Regular	0.875rem
+Design Principles
+Dark First: Slate backgrounds with oxblood red accents create a premium, modern feel
+
+High Contrast: White text on dark backgrounds ensures readability
+
+Consistent Accents: Oxblood red used sparingly for calls to action and key highlights
+
+Subtle Depth: Shadows and borders in slate gray create visual hierarchy
+
+Responsive: All components adapt seamlessly across devices
+
+Technology Stack
+Frontend
+Technology	Version	Purpose
+TypeScript	5.x	Type-safe JavaScript
+Next.js	14.x	React framework with App Router
+Tailwind CSS	3.x	Utility-first styling with custom theme
+Lucide-React	Latest	Icon library
+TanStack Query	5.x	Server state management & caching
+Axios	1.x	HTTP client with interceptors
+Zod	3.x	Schema validation
+React Hook Form	7.x	Form handling
+Backend
+Technology	Version	Purpose
+TypeScript	5.x	Type-safe JavaScript
+Express.js	4.x	REST API framework
+MySQL	8.x	Relational database
+Sequelize	6.x	ORM with TypeScript support
+LetsFG API	-	Flight data aggregation
+JWT	9.x	Authentication & authorization
+Bcrypt	5.x	Password hashing
+Winston	3.x	Logging
+Development Tools
+Tool	Purpose
+ESLint	Code linting
+Prettier	Code formatting
+Husky	Git hooks
+Jest	Testing
+Supertest	API testing
+Docker	Containerization
+1. Visitor Views Home Page
+Operational Scenario 1.1: Home Page Load
+Actor: Visitor (Unauthenticated User)
+
+Scenario: A visitor accesses the application homepage, viewing the flight search interface, system information, and promotional content designed with slate and oxblood red theme.
+
+Screen: Home Page (/)
+Page Layout & Design
+text
+┌──────────────────────────────────────────────────────────────┐
+│ [Logo]                    [Sign In] [Register]              │ ← Navbar
+├──────────────────────────────────────────────────────────────┤
+│                                                              │
+│  ✈️ Find Your Next Adventure                                 │ ← Hero Section
+│  Search and book flights from hundreds of airlines          │   (Oxblood accent)
+│                                                              │
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │  From: [LHR ▼]  To: [JFK ▼]  Date: [2026-07-20]     │ │ ← Search Form
+│  │  Passengers: [1 Adult ▼]  Trip: [One Way ▼]          │ │   (Slate background)
+│  │  [🔍 Search Flights]                                  │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐                   │ ← Stats Cards
+│  │ 2,500 │  │  45  │  │  120 │  │ 4.8★ │                   │   (Oxblood accent)
+│  │Flights│  │Airlin│  │Cities│  │Rating│                   │
+│  └──────┘  └──────┘  └──────┘  └──────┘                   │
+│                                                              │
+│  📌 Featured Flights                                         │ ← Featured Section
+│  ┌────────────────────────────────────────────────────────┐ │
+│  │ LHR ✈️ JFK  $499  British Airways  Direct  ⭐Featured │ │
+│  │ LGW ✈️ CDG  $89   EasyJet         Direct              │ │
+│  │ STN ✈️ BCN  $45   Ryanair         Direct              │ │
+│  └────────────────────────────────────────────────────────┘ │
+│                                                              │
+│  ✨ Why Choose Us                                            │ ← Features Section
+│  ┌──────┐  ┌──────┐  ┌──────┐  ┌──────┐                   │
+│  │🔒 Safe│  │💰 Best│  │🌍 Wide│  │📱 Easy│                │
+│  │Secure │  │Prices│  │Coverag│  │Booking│                │
+│  └──────┘  └──────┘  └──────┘  └──────┘                   │
+│                                                              │
+│  [Start Your Journey →]                                     │ ← CTA Section
+│                                                              │   (Oxblood button)
+│  ──────────────────────────────────────────────────────────  │
+│  © 2026 Swift Wings  |  Privacy  |  Terms            │ ← Footer
+└──────────────────────────────────────────────────────────────┘
+Components Breakdown
+1. Navigation Bar
+
+Background: Slate (#1E293B) with bottom border (#334155)
+
+Logo: Swift Wings brand name with plane icon
+
+Navigation links: Home, Flights, About, Contact
+
+Auth buttons:
+
+Sign In: White text, transparent background, hover underline
+
+Register: Oxblood red background (#4A0404), white text, hover (#6B0F0F)
+
+Mobile: Hamburger menu with slide-out drawer
+
+2. Hero Section
+
+Background: Gradient from dark slate (#1E293B) to oxblood red (#4A0404)
+
+Main heading: "Find Your Next Adventure" in white, bold (3rem)
+
+Subtitle: "Search and book flights from hundreds of airlines" in light gray (#94A3B8)
+
+Decorative elements: Animated plane trails with subtle particle effects
+
+3. Search Form (Primary Interaction)
+
+Container: Dark slate (#0F172A), rounded corners (1rem), border (#334155)
+
+Form fields:
+
+Origin: Autocomplete with IATA codes and airport names
+
+Destination: Autocomplete with IATA codes
+
+Departure Date: Date picker with calendar
+
+Return Date: Optional (appears for round-trip)
+
+Passengers: Dropdown with counter for adults, children, infants
+
+Trip Type: Toggle between One Way / Round Trip
+
+Search Button: Oxblood red (#4A0404), white text, rounded, hover (#6B0F0F)
+
+4. Stats Section
+
+Four stat cards in a grid
+
+Each card:
+
+Number: Large (2.5rem), white, bold
+
+Label: Light gray (#94A3B8), small
+
+Left border: Oxblood red (4px)
+
+Background: Dark slate (#0F172A), rounded
+
+5. Featured Flights Section
+
+Title: "Featured Flights" with oxblood underline
+
+Layout: Horizontal scrollable cards on desktop, grid on mobile
+
+Each card:
+
+Route: Origin → Destination (white)
+
+Price: Large (1.5rem), white, bold
+
+Airline: Light gray
+
+Stops indicator: Direct / 1 Stop / 2+ Stops
+
+"Featured" badge: Amber (#F59E0B)
+
+"Select" button: Oxblood red (#4A0404)
+
+6. Features Section
+
+Grid of 4 feature cards
+
+Each card:
+
+Icon: Lucide-React icon, oxblood red
+
+Title: White, semibold
+
+Description: Light gray
+
+Hover: Subtle lift and glow
+
+7. Call to Action Section
+
+Background: Oxblood red with opacity
+
+Text: "Ready to find your perfect flight?" in white
+
+CTA Button: White background, slate text, hover animation
+
+8. Footer
+
+Background: Dark slate (#0F172A)
+
+Links: Privacy Policy, Terms of Service, Contact
+
+Social media icons: Lucide-React, hover oxblood
+
+Copyright notice: Light gray, small
+
+Responsive Behavior
+Breakpoint	Layout Changes
+Desktop (1024px+)	Full layout, horizontal navigation, 4-column stats, 2-row features
+Tablet (768-1023px)	2-column stats, 2-column features, stacked search form
+Mobile (<768px)	Single column, hamburger menu, full-width search form, stacked cards
+View Model
+typescript
+interface HomePageViewModel {
+  heroSection: {
+    title: string;
+    subtitle: string;
+    backgroundImage: string;
+  };
+  searchForm: {
+    origin: string;
+    destination: string;
+    departureDate: string;
+    returnDate?: string;
+    passengers: {
+      adults: number;
+      children: number;
+      infants: number;
+    };
+    tripType: 'one-way' | 'round-trip';
+  };
+  stats: {
+    totalFlights: number;
+    airlines: number;
+    destinations: number;
+    averageRating: number;
+    lastUpdated: string;
+  };
+  featuredFlights: Array<{
+    id: string;
+    origin: string;
+    destination: string;
+    departureTime: string;
+    arrivalTime: string;
+    airline: string;
+    price: number;
+    currency: string;
+    stops: number;
+    source: 'admin' | 'letsfg';
+  }>;
+  features: Array<{
+    icon: string;
+    title: string;
+    description: string;
+  }>;
+  callToAction: {
+    title: string;
+    buttonText: string;
+  };
+}
+API URLs Consumed
+text
+GET /api/public/stats
+GET /api/public/flights/featured?limit=5
+Response Schemas
+typescript
+// GET /api/public/stats
+{
+  "success": true,
+  "data": {
+    "totalFlights": 2500,
+    "airlines": 45,
+    "destinations": 120,
+    "averageRating": 4.8,
+    "lastUpdated": "2026-07-14T10:30:00Z"
+  }
+}
+
+// GET /api/public/flights/featured
+{
+  "success": true,
+  "data": [
+    {
+      "id": "fl_123",
+      "origin": "LHR",
+      "destination": "JFK",
+      "departureTime": "2026-07-20T08:30:00Z",
+      "arrivalTime": "2026-07-20T11:45:00Z",
+      "airline": "British Airways",
+      "price": 499,
+      "currency": "USD",
+      "stops": 0,
+      "source": "admin"
+    }
+  ]
+}
+2. Visitor Searches for Flights
+Operational Scenario 2.1: Flight Search
+Actor: Visitor (Unauthenticated User)
+
+Scenario: Visitor enters flight search criteria and receives merged results from admin-added flights and LetsFG API. Upon selection, visitor fills passenger details and is redirected to WhatsApp for payment.
+
+Screen: Search Results Page (/search)
+Page Layout
+text
+┌──────────────────────────────────────────────────────────────┐
+│ [Logo]                    [Sign In] [Register]              │
+├──────────────────────────────────────────────────────────────┤
+│  ✈️ LHR → JFK  |  July 20, 2026  |  1 Adult  |  One Way   │ ← Search Summary
+│                                                              │   (Oxblood accent)
+│  Filters                          Results (42 found)        │
+│  ┌─────────────┐                  ┌────────────────────┐   │
+│  │ Airlines     │                  │ ✈️ American Airlines│   │
+│  │ ☑ British    │                  │ LHR 08:30 → JFK   │   │
+│  │ ☑ American   │                  │ 11:45  Direct     │   │
+│  │ ☑ Delta      │                  │ $499  🛒 Select   │   │ ← Card
+│  │ ☐ United     │                  ├────────────────────┤   │
+│  │              │                  │ ✈️ Delta Airlines  │   │
+│  │ Price        │                  │ LHR 10:15 → JFK   │   │
+│  │ [$0 ──── $800]│                  │ 13:30  1 Stop     │   │
+│  │              │                  │ $389  🛒 Select   │   │
+│  │ Stops        │                  ├────────────────────┤   │
+│  │ ☑ Direct     │                  │ ✈️ British Airways │   │
+│  │ ☐ 1 Stop     │                  │ LHR 12:00 → JFK   │   │
+│  │ ☐ 2+ Stops   │                  │ 15:15  Direct     │   │
+│  │              │                  │ $599  🛒 Select   │   │
+│  │ Departure    │                  ├────────────────────┤   │
+│  │ [Morning ▼]  │                  │ Page 1 of 5       │   │
+│  └─────────────┘                  └────────────────────┘   │
+│                                                              │
+│  Sources: Admin (12) | LetsFG (30)                          │ ← Source Tags
+└──────────────────────────────────────────────────────────────┘
+Filter Sidebar Details
+Filter	Type	Options
+Airlines	Checkbox	List of airlines with counts
+Price Range	Range Slider	Min-Max with value display
+Stops	Checkbox	Direct, 1 Stop, 2+ Stops
+Departure Time	Dropdown	Morning (6-12), Afternoon (12-18), Evening (18-24), Night (0-6)
+Arrival Time	Dropdown	Morning, Afternoon, Evening, Night
+Source	Checkbox	Admin Added, LetsFG
+Result Card Design
+text
+┌─────────────────────────────────────────────────────────────┐
+│  [Airline Logo]  Airline Name           ★ Featured         │ ← Header
+│  Source: [Admin] or [LetsFG]                               │
+│  ────────────────────────────────────────────────────────   │
+│  LHR ✈️ JFK                                                │
+│  08:30 ───────────── 11:45                                 │
+│  Terminal 3          Terminal 4                            │
+│  ● ──── Direct ──── ●   Duration: 7h 15m                  │ ← Route
+│  ────────────────────────────────────────────────────────   │
+│  💰 $499 USD          🛄 1 Bag Included                    │ ← Price & Details
+│  🔄 Free Cancellation   📍 45 Seats Left                   │
+│  ────────────────────────────────────────────────────────   │
+│  [🛒 Select Flight]                                        │ ← Action
+└─────────────────────────────────────────────────────────────┘
+View Model
+typescript
+interface SearchResultsViewModel {
+  searchParams: {
+    origin: string;
+    destination: string;
+    departureDate: string;
+    returnDate?: string;
+    passengers: {
+      adults: number;
+      children: number;
+      infants: number;
+    };
+    tripType: 'one-way' | 'round-trip';
+  };
+  results: FlightResult[];
+  filters: {
+    airlines: string[];
+    priceRange: { 
+      min: number; 
+      max: number; 
+      currentMin: number; 
+      currentMax: number;
+    };
+    stops: number[];
+    departureTimes: string[];
+    sourceFilter: ('admin' | 'letsfg')[];
+  };
+  selectedFlight?: {
+    id: string;
+    offerId?: string;
+    source: 'admin' | 'letsfg';
+  };
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalResults: number;
+    resultsPerPage: number;
+  };
+  metadata: {
+    sources: {
+      admin: { count: number };
+      letsfg: { count: number };
+    };
+    searchId: string;
+    executionTime: number;
+  };
+  loading: boolean;
+  error?: string;
+}
+
+interface FlightResult {
+  id: string;
+  origin: string;
+  destination: string;
+  originFullName: string;
+  destinationFullName: string;
+  departureTime: string;
+  arrivalTime: string;
+  airline: string;
+  airlineCode: string;
+  flightNumber?: string;
+  price: number;
+  originalPrice?: number; // For displaying discounts
+  currency: string;
+  stops: number;
+  duration: string;
+  source: 'admin' | 'letsfg';
+  // LetsFG-specific
+  offerId?: string;
+  bookingUrl?: string;
+  segments?: FlightSegment[];
+  // Admin-specific
+  adminFlightId?: string;
+  isFeatured?: boolean;
+  baggage?: string;
+  cancellationPolicy?: string;
+  availableSeats?: number;
+}
+
+interface FlightSegment {
+  origin: string;
+  destination: string;
+  departureTime: string;
+  arrivalTime: string;
+  airline: string;
+  flightNumber: string;
+  duration: string;
+  terminal?: string;
+  layoverDuration?: string;
+}
+Scenario 2.1.1: Search Initiation
+API URL Consumed
+text
+POST /api/flights/search
+Request Schema
+typescript
+{
+  origin: string;          // IATA code
+  destination: string;     // IATA code
+  departureDate: string;   // YYYY-MM-DD
+  returnDate?: string;     // YYYY-MM-DD (for round-trip)
+  passengers: {
+    adults: number;
+    children: number;
+    infants: number;
+  };
+  tripType: 'one-way' | 'round-trip';
+  cabinClass?: 'economy' | 'premium_economy' | 'business' | 'first';
+  currency?: string;
+  page?: number;
+  limit?: number;
+  filters?: {
+    airlines?: string[];
+    minPrice?: number;
+    maxPrice?: number;
+    stops?: number[];
+  };
+}
+Response Schema
+typescript
+{
+  "success": true,
+  "data": {
+    "flights": FlightResult[];
+    "total": number;
+    "page": number;
+    "limit": number;
+    "filters": {
+      "airlines": string[];
+      "priceRange": { "min": number; "max": number };
+      "stops": number[];
+    }
+  },
+  "metadata": {
+    "sources": {
+      "admin": { "count": number },
+      "letsfg": { "count": number }
+    },
+    "searchId": string;
+    "executionTime": number;
+  }
+}
+Scenario 2.1.2: Flight Selection & Details
+Screen: Flight Details Modal
+text
+┌─────────────────────────────────────────────────────────────┐
+│  ✕ Close                                                    │
+│  ────────────────────────────────────────────────────────   │
+│  [Airline Logo]  American Airlines  AA-123                  │
+│  ⭐ Featured Flight                                         │
+│  ────────────────────────────────────────────────────────   │
+│  LHR ✈️ JFK                Duration: 7h 15m                │
+│  Wednesday, July 20, 2026                                  │
+│  08:30 ─────────── 11:45                                   │
+│  London Heathrow    New York JFK                           │
+│  Terminal 3         Terminal 4                             │
+│  ────────────────────────────────────────────────────────   │
+│  Flight Details                                            │
+│  • Aircraft: Boeing 777-300ER                             │
+│  • Baggage: 1 Carry-on + 1 Checked (23kg)                 │
+│  • Free Cancellation: Up to 24 hours before departure     │
+│  • 45 seats available                                     │
+│  ────────────────────────────────────────────────────────   │
+│  Price Breakdown                                           │
+│  Base Fare:  $450                                          │
+│  Taxes:       $49                                          │
+│  Total:       $499                                         │
+│  ────────────────────────────────────────────────────────   │
+│  [✈️ Continue to Booking]                                  │ ← Oxblood button
+└─────────────────────────────────────────────────────────────┘
+API URL Consumed
+text
+GET /api/flights/:id/details
+Response Schema
+typescript
+{
+  "success": true,
+  "data": {
+    "id": string;
+    "origin": string;
+    "destination": string;
+    "originFullName": string;
+    "destinationFullName": string;
+    "departureTime": string;
+    "arrivalTime": string;
+    "airline": string;
+    "airlineCode": string;
+    "flightNumber": string;
+    "price": number;
+    "currency": string;
+    "stops": number;
+    "duration": string;
+    "source": "admin" | "letsfg";
+    "segments": FlightSegment[];
+    "baggage": string;
+    "cancellationPolicy": string;
+    "bookingUrl": string;
+    "offerId"?: string;
+    "aircraft": string;
+    "availableSeats": number;
+    "priceBreakdown": {
+      "baseFare": number;
+      "taxes": number;
+      "total": number;
+    };
+  }
+}
+Scenario 2.1.3: Passenger Details & WhatsApp Redirect
+Screen: Booking Details Form (/book/:flightId)
+text
+┌─────────────────────────────────────────────────────────────┐
+│  ✈️ Complete Your Booking                                    │
+│  ────────────────────────────────────────────────────────   │
+│  Flight Summary                                            │
+│  LHR → JFK  |  July 20, 2026  |  $499 USD  |  1 Adult    │
+│  ────────────────────────────────────────────────────────   │
+│  Passenger Details                                         │
+│  ┌─────────────────────────────────────────────────────┐  │
+│  │ Full Name *:  [John Doe                           ] │  │
+│  │ Email *:      [john@example.com                  ] │  │
+│  │ Phone *:      [+1234567890                       ] │  │
+│  │ Special Requests: [                              ] │  │
+│  └─────────────────────────────────────────────────────┘  │
+│  ────────────────────────────────────────────────────────   │
+│  Payment Method                                            │
+│  You will be redirected to WhatsApp to complete payment   │
+│  ────────────────────────────────────────────────────────   │
+│  [💬 Complete Booking via WhatsApp]                       │ ← Oxblood button
+│  ────────────────────────────────────────────────────────   │
+│  💡 You'll be redirected to WhatsApp with booking details  │
+└─────────────────────────────────────────────────────────────┘
+View Model
+typescript
+interface BookingDetailsViewModel {
+  flight: FlightResult;
+  passengerForm: {
+    fullName: string;
+    email: string;
+    phone: string;
+    specialRequests?: string;
+  };
+  priceBreakdown: {
+    basePrice: number;
+    taxes: number;
+    total: number;
+    currency: string;
+  };
+  whatsappNumber: string;
+  paymentRedirect: {
+    url: string;
+    message: string;
+  };
+  bookingReference: string;
+  expiresAt: string;
+}
+API URL Posted
+text
+POST /api/bookings/initiate
+Request Schema
+typescript
+{
+  flightId: string;
+  passengerName: string;
+  email: string;
+  phone: string;
+  specialRequests?: string;
+  source: 'admin' | 'letsfg';
+  offerId?: string;
+}
+Response Schema
+typescript
+{
+  "success": true,
+  "data": {
+    "bookingReference": string;
+    "whatsappNumber": string;
+    "whatsappMessage": string;
+    "whatsappUrl": string;
+    "flightDetails": {
+      "origin": string;
+      "destination": string;
+      "departureTime": string;
+      "airline": string;
+      "price": number;
+      "currency": string;
+    },
+    "expiresAt": string;
+  }
+}
+WhatsApp Redirect
+text
+URL: https://wa.me/{whatsappNumber}?text={encodedMessage}
+
+Message Template:
+"I want to book a flight:
+✈️ {airline} - {flightNumber}
+📍 {origin} → {destination}
+📅 {departureDate} at {departureTime}
+👤 Passenger: {passengerName}
+📧 Email: {email}
+📱 Phone: {phone}
+💰 Total: {price} {currency}
+📋 Reference: {bookingReference}
+
+Please confirm availability and payment details."
+3. Admin CRUD Operations for Flights
+Operational Scenario 3.1: View All Flights
+Actor: Admin (Authenticated)
+
+Screen: Admin Flight List (/admin/flights)
+
+Screen Design
+text
+┌─────────────────────────────────────────────────────────────┐
+│ 🔒 Admin Dashboard                      [Logout]           │
+│ ┌──────────┬──────────┬──────────┬──────────┐             │
+│ │ 📊 Overview│ ✈️ Flights│ 💳 Payments│ 📋 Reports│          │ ← Admin Nav
+│ └──────────┴──────────┴──────────┴──────────┘             │
+├─────────────────────────────────────────────────────────────┤
+│  ✈️ Manage Flights                    [+ Add New Flight]   │ ← Header
+│  ────────────────────────────────────────────────────────   │
+│  Filters: [Airlines ▼] [Origin ▼] [Destination ▼]          │
+│  Status: [● All] [● Active] [● Inactive] [● Sold Out]     │
+│  ────────────────────────────────────────────────────────   │
+│  Results: 245 flights found                                 │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ ✈️ AA-123  LHR→JFK  Jul 20  08:30  $499  ✅ 45/50 │   │ ← Flight Row
+│  │ ✈️ BA-456  LHR→DXB  Jul 21  14:00  $799  ✅ 12/30 │   │
+│  │ ✈️ EK-789  LGW→SIN  Jul 22  22:15  $999  ⚠️ 2/40 │   │
+│  │ ✈️ FR-101  STN→BCN  Jul 23  06:00  $45   ❌ 0/20 │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  Page 1 of 13  [< Previous] [1] [2] [3] ... [Next >]      │
+└─────────────────────────────────────────────────────────────┘
+View Model
+typescript
+interface AdminFlightListViewModel {
+  flights: AdminFlight[];
+  filters: {
+    airline: string;
+    origin: string;
+    destination: string;
+    status: 'active' | 'inactive' | 'sold_out' | 'all';
+    dateRange: {
+      from: string;
+      to: string;
+    };
+  };
+  pagination: {
+    currentPage: number;
+    totalPages: number;
+    totalItems: number;
+    itemsPerPage: number;
+  };
+}
+
+interface AdminFlight {
+  id: string;
+  origin: string;
+  destination: string;
+  departureTime: string;
+  arrivalTime: string;
+  airline: string;
+  airlineCode: string;
+  flightNumber: string;
+  price: number;
+  currency: string;
+  availableSeats: number;
+  totalSeats: number;
+  status: 'active' | 'inactive' | 'sold_out';
+  createdAt: string;
+  updatedAt: string;
+}
+API URL Consumed
+text
+GET /api/admin/flights?page=1&limit=20&status=active
+Response Schema
+typescript
+{
+  "success": true,
+  "data": {
+    "flights": AdminFlight[];
+    "total": number;
+    "page": number;
+    "limit": number;
+    "totalPages": number;
+  }
+}
+Scenario 3.2: Create New Flight
+Screen: Admin Create Flight (/admin/flights/create)
+
+Screen Design
+text
+┌─────────────────────────────────────────────────────────────┐
+│  ✈️ Add New Flight                     [Cancel] [Save]     │
+│  ────────────────────────────────────────────────────────   │
+│  Route Details                                             │
+│  Origin:       [LHR ▼]  London Heathrow                   │
+│  Destination:  [JFK ▼]  New York JFK                      │
+│  ────────────────────────────────────────────────────────   │
+│  Schedule                                                  │
+│  Departure:    [2026-07-20] [08:30]                       │
+│  Arrival:      [2026-07-20] [11:45]                       │
+│  ────────────────────────────────────────────────────────   │
+│  Flight Information                                        │
+│  Airline:      [British Airways ▼]                        │
+│  Flight #:     [BA-123]                                   │
+│  Aircraft:     [Boeing 777-300ER]                         │
+│  ────────────────────────────────────────────────────────   │
+│  Pricing & Availability                                    │
+│  Price:        [$499]   Currency: [USD ▼]                  │
+│  Total Seats:  [50]    Cabin: [Economy ▼]                  │
+│  ────────────────────────────────────────────────────────   │
+│  Additional Information                                     │
+│  Baggage:       [1 x 23kg included]                        │
+│  Cancellation:  [Free up to 24hr]                          │
+│  ────────────────────────────────────────────────────────   │
+│  [✈️ Create Flight]          [Cancel]                      │ ← Oxblood button
+└─────────────────────────────────────────────────────────────┘
+View Model
+typescript
+interface CreateFlightViewModel {
+  form: {
+    origin: string;
+    destination: string;
+    departureTime: string;
+    arrivalTime: string;
+    airline: string;
+    airlineCode: string;
+    flightNumber: string;
+    price: number;
+    currency: string;
+    totalSeats: number;
+    availableSeats: number;
+    aircraft?: string;
+    baggage?: string;
+    cancellationPolicy?: string;
+    cabinClass: 'economy' | 'premium_economy' | 'business' | 'first';
+  };
+  airports: Array<{ code: string; name: string; city: string }>;
+  airlines: Array<{ code: string; name: string }>;
+  validationErrors: Record<string, string>;
+}
+API URL Posted
+text
+POST /api/admin/flights
+Request Schema
+typescript
+{
+  origin: string;
+  destination: string;
+  departureTime: string;
+  arrivalTime: string;
+  airline: string;
+  airlineCode: string;
+  flightNumber: string;
+  price: number;
+  currency: string;
+  totalSeats: number;
+  aircraft?: string;
+  baggage?: string;
+  cancellationPolicy?: string;
+  cabinClass: 'economy' | 'premium_economy' | 'business' | 'first';
+}
+Response Schema
+typescript
+{
+  "success": true,
+  "data": {
+    "id": string;
+    "origin": string;
+    "destination": string;
+    "departureTime": string;
+    "arrivalTime": string;
+    "airline": string;
+    "airlineCode": string;
+    "flightNumber": string;
+    "price": number;
+    "currency": string;
+    "totalSeats": number;
+    "availableSeats": number;
+    "status": "active";
+    "createdAt": string;
+  },
+  "message": "Flight created successfully"
+}
+Scenario 3.3: Update Flight
+Screen: Admin Edit Flight (/admin/flights/:id/edit)
+
+View Model
+Same as CreateFlightViewModel with populated data
+
+API URL Patched
+text
+PATCH /api/admin/flights/:id
+Request Schema
+typescript
+{
+  origin?: string;
+  destination?: string;
+  departureTime?: string;
+  arrivalTime?: string;
+  airline?: string;
+  airlineCode?: string;
+  flightNumber?: string;
+  price?: number;
+  currency?: string;
+  totalSeats?: number;
+  availableSeats?: number;
+  aircraft?: string;
+  baggage?: string;
+  cancellationPolicy?: string;
+  cabinClass?: 'economy' | 'premium_economy' | 'business' | 'first';
+  status?: 'active' | 'inactive' | 'sold_out';
+}
+Response Schema
+typescript
+{
+  "success": true,
+  "data": {
+    "id": string;
+    "origin": string;
+    "destination": string;
+    "departureTime": string;
+    "arrivalTime": string;
+    "airline": string;
+    "airlineCode": string;
+    "flightNumber": string;
+    "price": number;
+    "currency": string;
+    "totalSeats": number;
+    "availableSeats": number;
+    "status": string;
+    "updatedAt": string;
+  },
+  "message": "Flight updated successfully"
+}
+Scenario 3.4: Delete Flight
+API URL Deleted
+text
+DELETE /api/admin/flights/:id
+Response Schema
+typescript
+{
+  "success": true,
+  "message": "Flight deleted successfully"
+}
+4. Admin Marks Visitor as Paid
+Operational Scenario 4.1: View Payment Requests
+Actor: Admin (Authenticated)
+
+Screen: Admin Payments Queue (/admin/payments)
+
+Screen Design
+text
+┌─────────────────────────────────────────────────────────────┐
+│  💳 Payment Queue                                           │
+│  ────────────────────────────────────────────────────────   │
+│  Summary: [🔴 12 Pending] [🟡 3 Processing]               │
+│           [✅ 45 Paid]     [❌ 5 Failed]                    │
+│  ────────────────────────────────────────────────────────   │
+│  Tabs: [All] [Pending] [Processing] [Paid] [Failed]       │
+│  ────────────────────────────────────────────────────────   │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ #123  John Doe   LHR→JFK  $499  🟡 Pending  ⏰ 5m │   │ ← Payment Row
+│  │ #124  Jane Smith LGW→CDG  $89   🟡 Pending  ⏰ 2m │   │
+│  │ #125  Bob Wilson STN→BCN  $45   🟢 Processing ⏰ 1h│   │
+│  │ #126  Sarah Lee  LHR→DXB  $799  ✅ Paid     ✅ 2h │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  [Export CSV] [Refresh]                                    │
+└─────────────────────────────────────────────────────────────┘
+View Model
+typescript
+interface PaymentQueueViewModel {
+  pendingPayments: PaymentRequest[];
+  processingPayments: PaymentRequest[];
+  completedPayments: PaymentRequest[];
+  failedPayments: PaymentRequest[];
+  summary: {
+    pending: number;
+    processing: number;
+    paid: number;
+    failed: number;
+    totalRevenue: number;
+    currency: string;
+  };
+}
+
+interface PaymentRequest {
+  id: string;
+  bookingReference: string;
+  passengerName: string;
+  passengerEmail: string;
+  passengerPhone: string;
+  flight: {
+    origin: string;
+    destination: string;
+    departureTime: string;
+    airline: string;
+    flightNumber: string;
+    price: number;
+    currency: string;
+  };
+  amount: number;
+  currency: string;
+  status: 'pending' | 'processing' | 'paid' | 'failed' | 'cancelled';
+  whatsappConversation: string;
+  createdAt: string;
+  timeSinceCreation: string;
+  paidAt?: string;
+  confirmedBy?: string;
+  notes?: string;
+}
+API URL Consumed
+text
+GET /api/admin/payments?status=pending,processing
+Response Schema
+typescript
+{
+  "success": true,
+  "data": {
+    "payments": PaymentRequest[];
+    "total": number;
+    "summary": {
+      "pending": number;
+      "processing": number;
+      "paid": number;
+      "failed": number;
+      "totalRevenue": number;
+      "currency": string;
+    }
+  }
+}
+Scenario 4.2: Mark as Paid
+Screen: Payment Detail (/admin/payments/:id)
+
+Screen Design
+text
+┌─────────────────────────────────────────────────────────────┐
+│  💳 Payment Details                    [Back to Queue]     │
+│  ────────────────────────────────────────────────────────   │
+│  Booking Reference: #BK-2026-07-14-00123                  │
+│  Passenger: John Doe (john@example.com)                   │
+│  Phone: +1234567890                                       │
+│  ────────────────────────────────────────────────────────   │
+│  Flight Details                                            │
+│  ✈️ American Airlines - AA-123                            │
+│  LHR → JFK | July 20, 2026 | 08:30                       │
+│  💰 Total: $499 USD                                       │
+│  ────────────────────────────────────────────────────────   │
+│  WhatsApp Conversation                                     │
+│  [View Full Conversation Log]                             │
+│  ────────────────────────────────────────────────────────   │
+│  Payment Confirmation                                      │
+│  Method: [Cash ▼]                                         │
+│  Reference: [_______________]                             │
+│  Notes:    [_______________]                             │
+│  ────────────────────────────────────────────────────────   │
+│  [✅ Confirm Payment]  [❌ Cancel Booking]                 │ ← Oxblood button
+│  ────────────────────────────────────────────────────────   │
+│  Timeline                                                  │
+│  14:30 - Booking initiated by visitor                      │
+│  14:32 - WhatsApp conversation started                     │
+│  15:00 - Payment confirmed by admin ✅                     │
+└─────────────────────────────────────────────────────────────┘
+View Model
+typescript
+interface PaymentDetailViewModel {
+  payment: PaymentRequest;
+  ticketDelivery: {
+    status: 'pending' | 'processing' | 'sent' | 'confirmed';
+    sentAt?: string;
+    confirmedAt?: string;
+    ticketNumber?: string;
+    pnr?: string;
+  };
+  actions: {
+    canMarkPaid: boolean;
+    canSendTicket: boolean;
+    canCancel: boolean;
+  };
+  timeline: Array<{
+    timestamp: string;
+    action: string;
+    user: string;
+    details: string;
+  }>;
+  whatsappLog: string;
+}
+API URL Patched
+text
+PATCH /api/admin/payments/:id/mark-paid
+Request Schema
+typescript
+{
+  paymentConfirmation: {
+    method: 'cash' | 'bank_transfer' | 'mobile_money' | 'whatsapp';
+    reference?: string;
+    notes?: string;
+    amount: number;
+    currency: string;
+  };
+}
+Response Schema
+typescript
+{
+  "success": true,
+  "data": {
+    "id": string;
+    "bookingReference": string;
+    "status": "paid";
+    "paidAt": string;
+    "confirmedBy": string;
+    "amount": number;
+    "currency": string;
+    "ticketDelivery": {
+      "status": "pending";
+      "ticketNumber": string;
+      "pnr": string;
+    }
+  },
+  "message": "Payment confirmed successfully"
+}
+Scenario 4.3: Standard Ticket Delivery Process
+Screen: Ticket Delivery (/admin/payments/:id/delivery)
+
+Screen Design
+text
+┌─────────────────────────────────────────────────────────────┐
+│  🎫 Ticket Delivery                    [Back to Payment]   │
+│  ────────────────────────────────────────────────────────   │
+│  Booking Reference: #BK-2026-07-14-00123                  │
+│  Passenger: John Doe                                       │
+│  ────────────────────────────────────────────────────────   │
+│  Ticket Details                                            │
+│  Ticket Number: AA-123456789                               │
+│  PNR:  ABC123                                              │
+│  ────────────────────────────────────────────────────────   │
+│  Delivery Options                                          │
+│  ┌─────────────────────────────────────────────────────┐   │
+│  │ 💬 WhatsApp    [Send Ticket]  Status: ✅ Sent      │   │
+│  │ 📧 Email       [Send Ticket]  Status: ⏳ Pending   │   │
+│  │ 📥 Download    [Generate PDF]  Status: Available   │   │
+│  └─────────────────────────────────────────────────────┘   │
+│  ────────────────────────────────────────────────────────   │
+│  Confirmation                                              │
+│  [✅ Confirm Delivery]                                     │ ← Oxblood button
+│  ────────────────────────────────────────────────────────   │
+│  Timeline                                                  │
+│  15:00 - Payment confirmed                                 │
+│  15:05 - Ticket generated: AA-123456789                   │
+│  15:10 - WhatsApp message sent ✅                          │
+└─────────────────────────────────────────────────────────────┘
+View Model
+typescript
+interface TicketDeliveryViewModel {
+  payment: PaymentRequest;
+  ticket: {
+    ticketNumber: string;
+    pnr: string;
+    eTicketUrl: string;
+    qrCode: string;
+  };
+  deliveryOptions: {
+    whatsapp: {
+      number: string;
+      message: string;
+      sent: boolean;
+      sentAt?: string;
+    };
+    email: {
+      sent: boolean;
+      sentAt?: string;
+    };
+    download: {
+      available: boolean;
+      url: string;
+    };
+  };
+  status: 'pending' | 'processing' | 'sent' | 'confirmed';
+}
+API URLs
+POST (Send Ticket via WhatsApp):
+
+text
+POST /api/admin/payments/:id/send-ticket/whatsapp
+Request Schema:
+
+typescript
+{
+  message: string;
+  includeETicket: boolean;
+}
+Response Schema:
+
+typescript
+{
+  "success": true,
+  "data": {
+    "sentAt": string;
+    "whatsappMessageId": string;
+    "status": "sent";
+    "deliveryMethod": "whatsapp";
+    "ticketUrl": string;
+  }
+}
+POST (Send Ticket via Email):
+
+text
+POST /api/admin/payments/:id/send-ticket/email
+Request Schema:
+
+typescript
+{
+  subject: string;
+  message: string;
+  includeETicket: boolean;
+}
+Response Schema:
+
+typescript
+{
+  "success": true,
+  "data": {
+    "sentAt": string;
+    "emailId": string;
+    "status": "sent";
+    "deliveryMethod": "email";
+  }
+}
+PATCH (Confirm Delivery):
+
+text
+PATCH /api/admin/payments/:id/confirm-delivery
+Request Schema:
+
+typescript
+{
+  confirmationCode: string;
+  deliveredTo: string;
+}
+Response Schema:
+
+typescript
+{
+  "success": true,
+  "data": {
+    "status": "confirmed";
+    "confirmedAt": string;
+    "confirmedBy": string;
+    "ticketNumber": string;
+    "pnr": string;
+  },
+  "message": "Ticket delivery confirmed"
+}
+API Error Response Schema (All Endpoints)
+typescript
+interface ErrorResponse {
+  success: false;
+  error: {
+    code: string;
+    message: string;
+    details?: Record<string, any>;
+    timestamp: string;
+    requestId: string;
+  };
+}
+Common Error Codes
+Code	HTTP Status	Description
+BAD_REQUEST	400	Invalid input format or validation failed
+UNAUTHORIZED	401	Authentication required or token invalid
+FORBIDDEN	403	Insufficient permissions for operation
+NOT_FOUND	404	Resource doesn't exist
+CONFLICT	409	Resource already exists or conflict detected
+UNPROCESSABLE	422	Semantic errors in request
+RATE_LIMITED	429	Too many requests, slow down
+INTERNAL_ERROR	500	Server encountered unexpected error
+System Architecture
+Data Flow Diagram
+text
+┌─────────────────────────────────────────────────────────────────┐
+│                        Client (Browser)                         │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  Next.js App (TypeScript)                              │   │
+│  │  - TanStack Query (Caching)                            │   │
+│  │  - Axios (HTTP)                                       │   │
+│  │  - Tailwind CSS (Styling)                             │   │
+│  └────────────────────┬────────────────────────────────────┘   │
+│                       │ HTTPS                                  │
+└───────────────────────┼─────────────────────────────────────────┘
+                        │
+                        ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Express API Server                         │
+│  ┌─────────────────────────────────────────────────────────┐   │
+│  │  Middleware Layer                                       │   │
+│  │  - CORS                                                │   │
+│  │  - Rate Limiting (100 req/min)                         │   │
+│  │  - JWT Authentication                                  │   │
+│  │  - Request Logging                                     │   │
+│  └────────────────────┬────────────────────────────────────┘   │
+│                       │                                         │
+│  ┌────────────────────┴────────────────────────────────────┐   │
+│  │  Route Handlers (TypeScript)                           │   │
+│  │  - /api/public/*    (Public endpoints)                 │   │
+│  │  - /api/flights/*   (Search endpoints)                 │   │
+│  │  - /api/bookings/*  (Booking endpoints)                │   │
+│  │  - /api/admin/*     (Admin endpoints)                  │   │
+│  └────────────────────┬────────────────────────────────────┘   │
+│                       │                                         │
+│  ┌────────────────────┴────────────────────────────────────┐   │
+│  │  Service Layer                                         │   │
+│  │  - FlightService (Merging logic)                       │   │
+│  │  - BookingService                                      │   │
+│  │  - PaymentService                                      │   │
+│  │  - AdminService                                        │   │
+│  └────────────────────┬────────────────────────────────────┘   │
+└───────────────────────┼─────────────────────────────────────────┘
+                        │
+        ┌───────────────┼───────────────┐
+        │               │               │
+        ▼               ▼               ▼
+┌───────────────┐ ┌───────────────┐ ┌───────────────┐
+│   MySQL       │ │   LetsFG API  │ │   WhatsApp    │
+│   Database    │ │   (External)  │ │   (External)  │
+└───────────────┘ └───────────────┘ └───────────────┘
+Data Merging Strategy
+Search Execution:
+
+Admin flights queried from local MySQL database
+
+LetsFG API called for real-time flight data
+
+Both sources searched simultaneously for performance
+
+Merging Logic:
+
+Results deduplicated by flightNumber + departureDate
+
+Priority: Admin flights shown first (if featured)
+
+All results sorted by price (lowest to highest)
+
+Each result tagged with source: 'admin' | 'letsfg'
+
+Caching Strategy:
+
+LetsFG results cached for 5 minutes (TTL)
+
+Admin flights cached for 1 hour (TTL)
+
+Featured flights cached for 1 hour (TTL)
+
+Database Schema
+sql
+-- Flights table
+CREATE TABLE flights (
+  id VARCHAR(36) PRIMARY KEY,
+  origin VARCHAR(3) NOT NULL,
+  destination VARCHAR(3) NOT NULL,
+  departure_time DATETIME NOT NULL,
+  arrival_time DATETIME NOT NULL,
+  airline VARCHAR(100) NOT NULL,
+  airline_code VARCHAR(2) NOT NULL,
+  flight_number VARCHAR(10) NOT NULL,
+  price DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(3) DEFAULT 'USD',
+  total_seats INT NOT NULL,
+  available_seats INT NOT NULL,
+  aircraft VARCHAR(100),
+  baggage TEXT,
+  cancellation_policy TEXT,
+  cabin_class ENUM('economy', 'premium_economy', 'business', 'first'),
+  status ENUM('active', 'inactive', 'sold_out') DEFAULT 'active',
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_route (origin, destination),
+  INDEX idx_departure (departure_time),
+  INDEX idx_status (status)
+);
+
+-- Bookings table
+CREATE TABLE bookings (
+  id VARCHAR(36) PRIMARY KEY,
+  booking_reference VARCHAR(20) UNIQUE NOT NULL,
+  flight_id VARCHAR(36) NOT NULL,
+  passenger_name VARCHAR(255) NOT NULL,
+  passenger_email VARCHAR(255) NOT NULL,
+  passenger_phone VARCHAR(20) NOT NULL,
+  special_requests TEXT,
+  source ENUM('admin', 'letsfg') NOT NULL,
+  offer_id VARCHAR(100),
+  amount DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(3) DEFAULT 'USD',
+  status ENUM('pending', 'processing', 'paid', 'failed', 'cancelled') DEFAULT 'pending',
+  whatsapp_conversation TEXT,
+  paid_at TIMESTAMP NULL,
+  confirmed_by VARCHAR(100),
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  expires_at TIMESTAMP DEFAULT (CURRENT_TIMESTAMP + INTERVAL 30 MINUTE),
+  FOREIGN KEY (flight_id) REFERENCES flights(id),
+  INDEX idx_reference (booking_reference),
+  INDEX idx_status (status),
+  INDEX idx_created (created_at)
+);
+
+-- Payments table
+CREATE TABLE payments (
+  id VARCHAR(36) PRIMARY KEY,
+  booking_id VARCHAR(36) NOT NULL,
+  amount DECIMAL(10,2) NOT NULL,
+  currency VARCHAR(3) DEFAULT 'USD',
+  method ENUM('cash', 'bank_transfer', 'mobile_money', 'whatsapp') NOT NULL,
+  reference VARCHAR(100),
+  status ENUM('pending', 'completed', 'failed') DEFAULT 'pending',
+  confirmed_by VARCHAR(100),
+  confirmed_at TIMESTAMP NULL,
+  notes TEXT,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (booking_id) REFERENCES bookings(id),
+  INDEX idx_booking (booking_id),
+  INDEX idx_status (status)
+);
+
+-- Tickets table
+CREATE TABLE tickets (
+  id VARCHAR(36) PRIMARY KEY,
+  booking_id VARCHAR(36) NOT NULL,
+  ticket_number VARCHAR(50) UNIQUE NOT NULL,
+  pnr VARCHAR(10) NOT NULL,
+  e_ticket_url VARCHAR(255),
+  qr_code TEXT,
+  delivery_status ENUM('pending', 'sent', 'confirmed') DEFAULT 'pending',
+  sent_via ENUM('whatsapp', 'email'),
+  sent_at TIMESTAMP NULL,
+  confirmed_at TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  FOREIGN KEY (booking_id) REFERENCES bookings(id),
+  INDEX idx_ticket (ticket_number),
+  INDEX idx_pnr (pnr)
+);
+
+-- Admin users table
+CREATE TABLE admin_users (
+  id VARCHAR(36) PRIMARY KEY,
+  email VARCHAR(255) UNIQUE NOT NULL,
+  password_hash VARCHAR(255) NOT NULL,
+  full_name VARCHAR(255) NOT NULL,
+  role ENUM('admin', 'super_admin') DEFAULT 'admin',
+  last_login TIMESTAMP NULL,
+  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+  updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  INDEX idx_email (email)
+);
+Security Considerations
+Authentication & Authorization
+Layer	Mechanism	Implementation
+Public Routes	Rate Limiting	100 requests per minute per IP
+Admin Routes	JWT Authentication	Token expires after 24 hours
+API Keys	Bearer Token	trav_ prefixed keys for LetsFG
+Password Storage	Bcrypt Hashing	Salt rounds = 12
+Data Protection
+Concern	Solution
+SQL Injection	Sequelize ORM with parameterized queries
+XSS	Next.js automatic escaping, CSP headers
+CSRF	SameSite cookies, anti-CSRF tokens
+HTTPS	Enforced in production
+Sensitive Data	Encrypted at rest (AES-256)
+Logs	No PII in logs, sanitized before storage
+Audit Trail
+All admin actions logged with:
+
+User ID
+
+Timestamp
+
+IP address
+
+Action performed
+
+Resource affected
+
+Old/New values (for updates)
+
+Deployment & Environment Variables
+Required Variables
+bash
+# Server Configuration
+PORT=3000
+NODE_ENV=production
+
+# Database
+DB_HOST=localhost
+DB_PORT=3306
+DB_USER=flight_admin
+DB_PASSWORD=secure_password
+DB_NAME=flight_aggregator
+DB_POOL_SIZE=10
+
+# JWT Authentication
+JWT_SECRET=your_strong_secret_key_here
+JWT_EXPIRATION=24h
+
+# LetsFG Integration
+LETSFG_API_KEY=trav_your_api_key_here
+LETSFG_BASE_URL=https://letsfg.co/developers/api/v1
+LETSFG_TIMEOUT=30000
+
+# WhatsApp Integration
+WHATSAPP_BUSINESS_NUMBER=+1234567890
+WHATSAPP_API_URL=https://api.whatsapp.com/send
+WHATSAPP_MESSAGE_TEMPLATE="I want to book: Flight {airline} from {origin} to {destination} on {date}. Passenger: {name}. Reference: {reference}. Total: {price} {currency}"
+
+# Admin Account
+ADMIN_EMAIL=admin@example.com
+ADMIN_PASSWORD=secure_admin_password
+
+# Caching
+REDIS_URL=redis://localhost:6379
+CACHE_TTL_SEARCH=300
+CACHE_TTL_FLIGHTS=3600
+
+# Rate Limiting
+RATE_LIMIT_WINDOW=60000
+RATE_LIMIT_MAX_REQUESTS=100
+
+# Logging
+LOG_LEVEL=info
+LOG_FILE=logs/app.log
+Deployment Checklist
+Environment variables configured
+
+Database migrations run
+
+SSL certificate installed
+
+Firewall rules applied
+
+Rate limiting configured
+
+Monitoring setup (logs, metrics)
+
+Backup strategy implemented
+
+Security headers enabled
+
+API keys rotated
+
+Admin account created
+
+Version History
+Version	Date	Author	Changes
+1.0	2026-07-14	System Architect	Initial document creation
+Appendices
+A: API Endpoint Summary
+Method	Endpoint	Description	Auth
+GET	/api/public/stats	Get site statistics	None
+GET	/api/public/flights/featured	Get featured flights	None
+POST	/api/flights/search	Search flights	None
+GET	/api/flights/:id/details	Get flight details	None
+POST	/api/bookings/initiate	Initiate booking	None
+GET	/api/admin/flights	List all flights	Admin
+POST	/api/admin/flights	Create flight	Admin
+PATCH	/api/admin/flights/:id	Update flight	Admin
+DELETE	/api/admin/flights/:id	Delete flight	Admin
+GET	/api/admin/payments	List payments	Admin
+PATCH	/api/admin/payments/:id/mark-paid	Mark payment as paid	Admin
+POST	/api/admin/payments/:id/send-ticket/whatsapp	Send ticket via WhatsApp	Admin
+POST	/api/admin/payments/:id/send-ticket/email	Send ticket via email	Admin
+PATCH	/api/admin/payments/:id/confirm-delivery	Confirm ticket delivery	Admin
+B: Common IATA Codes
+Code	Airport Name	City	Country
+LHR	London Heathrow	London	UK
+LGW	London Gatwick	London	UK
+STN	London Stansted	London	UK
+LTN	London Luton	London	UK
+SEN	London Southend	London	UK
+LCY	London City	London	UK
+JFK	John F. Kennedy	New York	USA
+EWR	Newark Liberty	New York	USA
+LGA	LaGuardia	New York	USA
+CDG	Charles de Gaulle	Paris	France
+ORY	Orly	Paris	France
+DXB	Dubai International	Dubai	UAE
+SIN	Singapore Changi	Singapore	Singapore
+BCN	Barcelona El Prat	Barcelona	Spain
+AMS	Amsterdam Schiphol	Amsterdam	Netherlands
+FRA	Frankfurt	Frankfurt	Germany
+MUC	Munich	Munich	Germany
+SYD	Sydney Kingsford Smith	Sydney	Australia
+NRT	Narita	Tokyo	Japan
+HND	Haneda	Tokyo	Japan
+END OF DOCUMENT

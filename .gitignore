@@ -1,0 +1,27 @@
+# Dependencies
+node_modules/
+.pnp
+.pnp.*
+
+# Next.js build output
+client/.next/
+client/out/
+
+# Backend build output
+server/dist/
+server/build/
+
+# Logs
+server/logs/
+*.log
+
+# Environment variables
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# OS files
+.DS_Store
+Thumbs.db
