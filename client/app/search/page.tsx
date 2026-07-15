@@ -5,10 +5,10 @@ import { useSearchParams } from 'next/navigation';
 import { searchFlights } from '../../lib/api';
 import { Plane, Filter, Clock, MapPin, Search } from 'lucide-react';
 import Link from 'next/link';
-import { useState } from 'react';
+import { useState, Suspense } from 'react';
 import { useRouter } from 'next/navigation';
 
-export default function SearchPage() {
+function SearchResults() {
   const searchParams = useSearchParams();
   const router = useRouter();
 
@@ -197,5 +197,13 @@ export default function SearchPage() {
         </div>
       </div>
     </div>
+  );
+}
+
+export default function SearchPage() {
+  return (
+    <Suspense fallback={<div className="text-text-primary p-8 text-center">Loading flights...</div>}>
+      <SearchResults />
+    </Suspense>
   );
 }

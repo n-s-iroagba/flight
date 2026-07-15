@@ -4,11 +4,9 @@ import { useQuery, useMutation } from '@tanstack/react-query';
 import { useSearchParams } from 'next/navigation';
 import { getFlightDetails, initiateBooking } from '../../../lib/api';
 import { Plane, ShieldCheck } from 'lucide-react';
-import { useState, use } from 'react';
+import { useState, use, Suspense } from 'react';
 
-export default function BookPage({ params }: { params: Promise<{ id: string }> }) {
-  const resolvedParams = use(params);
-  const id = resolvedParams.id;
+function BookPageContent({ id }: { id: string }) {
 
   const searchParams = useSearchParams();
   const source = searchParams.get('source') || 'admin';
@@ -187,5 +185,16 @@ export default function BookPage({ params }: { params: Promise<{ id: string }> }
         </div>
       </div>
     </div>
+  );
+}
+
+export default function BookPage({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = use(params);
+  const id = resolvedParams.id;
+
+  return (
+    <Suspense fallback={<div className="text-text-primary p-8 text-center">Loading booking details...</div>}>
+      <BookPageContent id={id} />
+    </Suspense>
   );
 }
