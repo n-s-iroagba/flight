@@ -6,7 +6,7 @@ import { getFlightDetails, initiateBooking } from '../../../lib/api';
 import { Plane, ShieldCheck } from 'lucide-react';
 import { useState, use, Suspense } from 'react';
 
-function BookPageContent({ id }: { id: string }) {
+export default function BookPageContent({ id }: { id: string }) {
 
   const searchParams = useSearchParams();
   const source = searchParams.get('source') || 'admin';
