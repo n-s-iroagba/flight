@@ -163,6 +163,89 @@ export class FlightController {
       return sendError(res, error.message);
     }
   }
+
+  // Private Jet Controllers
+  async listPrivateJets(req: Request, res: Response) {
+    try {
+      const page = parseInt(req.query.page as string) || 1;
+      const limit = parseInt(req.query.limit as string) || 20;
+      const result = await flightService.listPrivateJets(page, limit);
+      return sendSuccess(res, result);
+    } catch (error: any) {
+      return sendError(res, error.message);
+    }
+  }
+
+  async createPrivateJet(req: Request, res: Response) {
+    try {
+      const flight = await flightService.createPrivateJet(req.body);
+      return sendSuccess(res, flight, 'Private Jet flight created successfully', undefined, 201);
+    } catch (error: any) {
+      return sendError(res, error.message);
+    }
+  }
+
+  async updatePrivateJet(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const flight = await flightService.updatePrivateJet(id, req.body);
+      return sendSuccess(res, flight, 'Private Jet flight updated successfully');
+    } catch (error: any) {
+      return sendError(res, error.message);
+    }
+  }
+
+  async deletePrivateJet(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      await flightService.deletePrivateJet(id);
+      return sendSuccess(res, null, 'Private Jet flight deleted successfully');
+    } catch (error: any) {
+      return sendError(res, error.message);
+    }
+  }
+
+  async seedPrivateJets(req: Request, res: Response) {
+    try {
+      const jets = await flightService.seedPrivateJets();
+      return sendSuccess(res, jets, 'Private Jet flights seeded successfully');
+    } catch (error: any) {
+      return sendError(res, error.message);
+    }
+  }
+
+  // Flight Tracking & Location Updates
+  async trackFlightByTicket(req: Request, res: Response) {
+    try {
+      const { ticketNumber } = req.params;
+      if (!ticketNumber) {
+        return sendError(res, 'Ticket number is required', 'BAD_REQUEST', null, 400);
+      }
+      const trackingData = await flightService.trackFlightByTicket(ticketNumber);
+      if (!trackingData) {
+        return sendError(res, 'No flight found for the provided ticket number', 'NOT_FOUND', null, 404);
+      }
+      return sendSuccess(res, trackingData);
+    } catch (error: any) {
+      return sendError(res, error.message);
+    }
+  }
+
+  async updateLocation(req: Request, res: Response) {
+    try {
+      const { id } = req.params;
+      const { latitude, longitude, currentLocation } = req.body;
+
+      if (latitude === undefined || longitude === undefined) {
+        return sendError(res, 'Both latitude and longitude are required', 'BAD_REQUEST', null, 400);
+      }
+
+      const flight = await flightService.updateFlightLocation(id, Number(latitude), Number(longitude), currentLocation);
+      return sendSuccess(res, flight, 'Flight location updated successfully');
+    } catch (error: any) {
+      return sendError(res, error.message);
+    }
+  }
 }
 
 export default new FlightController();

@@ -32,6 +32,21 @@ export const initiateBooking = async (data: any) => {
   return response.data.data;
 };
 
+export const initiatePrivateJetBooking = async (data: any) => {
+  const response = await api.post('/bookings/initiate-private-jet', data);
+  return response.data.data;
+};
+
+export const getPublicPrivateJets = async () => {
+  const response = await api.get('/public/private-jets');
+  return response.data.data;
+};
+
+export const trackFlightByTicket = async (ticketNumber: string) => {
+  const response = await api.get(`/flights/track/${encodeURIComponent(ticketNumber)}`);
+  return response.data.data;
+};
+
 // Admin API
 export const adminLogin = async (credentials: any) => {
   const response = await api.post('/admin/auth/login', credentials);
@@ -56,6 +71,36 @@ export const getAdminFlights = async (params?: any) => {
 
 export const createAdminFlight = async (data: any) => {
   const response = await api.post('/admin/flights', data);
+  return response.data.data;
+};
+
+export const getAdminPrivateJets = async (params?: any) => {
+  const response = await api.get('/admin/private-jets', { params });
+  return response.data.data;
+};
+
+export const createAdminPrivateJet = async (data: any) => {
+  const response = await api.post('/admin/private-jets', data);
+  return response.data.data;
+};
+
+export const updateAdminPrivateJet = async (id: string, data: any) => {
+  const response = await api.patch(`/admin/private-jets/${id}`, data);
+  return response.data.data;
+};
+
+export const deleteAdminPrivateJet = async (id: string) => {
+  const response = await api.delete(`/admin/private-jets/${id}`);
+  return response.data.data;
+};
+
+export const seedAdminPrivateJets = async () => {
+  const response = await api.post('/admin/private-jets/seed');
+  return response.data.data;
+};
+
+export const updateFlightLocation = async (id: string, locationData: { latitude: number; longitude: number; currentLocation?: string }) => {
+  const response = await api.patch(`/admin/flights/${id}/location`, locationData);
   return response.data.data;
 };
 

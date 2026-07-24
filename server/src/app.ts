@@ -9,7 +9,22 @@ import { sendError } from './utils/response';
 const app = express();
 
 // Middlewares
-app.use(cors());
+const allowedOrigins = [
+  'http://localhost:3000',
+  'https://swiftwings.online',
+  'https://www.swiftwings.online'
+];
+
+app.use(cors({
+  origin: (origin, callback) => {
+    if (!origin) return callback(null, true);
+    if (allowedOrigins.indexOf(origin) !== -1 || env.NODE_ENV !== 'production') {
+      return callback(null, true);
+    }
+    return callback(new Error('CORS policy does not allow access from the specified Origin.'), false);
+  },
+  credentials: true
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
