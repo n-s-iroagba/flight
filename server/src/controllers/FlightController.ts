@@ -17,23 +17,39 @@ export class FlightController {
 
   async search(req: Request, res: Response) {
     try {
+      const optionalDate = z.preprocess(
+        (val) => (val === '' || val === null ? undefined : val),
+        z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional()
+      );
+
+      const optionalIata = z.preprocess(
+        (val) => (val === '' || val === null ? undefined : val),
+        z.string().length(3).optional()
+      );
+
       const schema = z.object({
-        origin: z.string().length(3).optional(),
-        destination: z.string().length(3).optional(),
-        departureDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
-        returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        origin: optionalIata,
+        destination: optionalIata,
+        departureDate: optionalDate,
+        returnDate: optionalDate,
         tripType: z.enum(['one-way', 'round-trip', 'multileg', 'direct']).optional(),
         directOnly: z.boolean().optional(),
         legs: z.array(z.object({
-          origin: z.string().length(3),
-          destination: z.string().length(3),
-          departureDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+          origin: z.string(),
+          destination: z.string(),
+          departureDate: optionalDate,
         })).optional(),
-        passengers: z.object({
-          adults: z.number().min(1),
-          children: z.number().min(0).optional(),
-          infants: z.number().min(0).optional(),
-        }).optional(),
+        passengers: z.preprocess(
+          (val) => (typeof val === 'string' && val.trim() !== '' ? parseInt(val, 10) : val),
+          z.union([
+            z.number().min(1),
+            z.object({
+              adults: z.number().min(1),
+              children: z.number().min(0).optional(),
+              infants: z.number().min(0).optional(),
+            })
+          ]).optional()
+        ),
       });
 
       const parsed = schema.safeParse(req.body);
@@ -48,7 +64,7 @@ export class FlightController {
         origin || legs?.[0]?.origin || '',
         destination || legs?.[0]?.destination || '',
         departureDate || legs?.[0]?.departureDate || '',
-        { tripType, returnDate, legs, directOnly }
+        { tripType, returnDate, legs: legs as any, directOnly }
       );
 
       const executionTime = Date.now() - startTime;

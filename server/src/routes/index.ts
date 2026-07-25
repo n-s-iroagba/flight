@@ -17,9 +17,9 @@ router.get('/public/stats', async (req, res) => {
     res.json({
       success: true,
       data: {
-        totalFlights: flightCount > 0 ? flightCount + 2480 : 2500,
-        airlines: 45,
-        destinations: 120,
+        totalFlights: flightCount,
+        airlines: flightCount > 0 ? 45 : 0,
+        destinations: flightCount > 0 ? 120 : 0,
         averageRating: 4.8,
         lastUpdated: new Date().toISOString()
       }
@@ -28,10 +28,10 @@ router.get('/public/stats', async (req, res) => {
     res.json({
       success: true,
       data: {
-        totalFlights: 2500,
-        airlines: 45,
-        destinations: 120,
-        averageRating: 4.8,
+        totalFlights: 0,
+        airlines: 0,
+        destinations: 0,
+        averageRating: 0,
         lastUpdated: new Date().toISOString()
       }
     });

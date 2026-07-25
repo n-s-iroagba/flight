@@ -31,11 +31,8 @@ export interface LetsFGFlight {
  * LetsFG Developer API Integration
  *
  * Per OpenAPI spec (https://letsfg.co/developers/api/openapi.json):
- *  - Auth: X-API-Key header (NOT Bearer token)
- *  - Search: POST /flights/search (NOT GET)
- *  - Body params: origin, destination, date_from (NOT query params)
- *  - Sandbox: insert "sandbox/" between v1/ and endpoint path for free testing
- *  - Response: { offers: [...], total_results: N }
+ *  - Auth: X-API-Key and Authorization: Bearer headers
+ *  - Search: POST /flights/search or POST /sandbox/flights/search
  */
 export class LetsFGService {
   private client = axios.create({
@@ -44,51 +41,56 @@ export class LetsFGService {
     headers: {
       'Content-Type': 'application/json',
       'X-API-Key': env.LETSFG_API_KEY || '',
+      'Authorization': `Bearer ${env.LETSFG_API_KEY || ''}`,
     },
   });
 
   async searchFlights(origin: string, destination: string, departureDate: string): Promise<LetsFGFlight[]> {
+    if (!env.LETSFG_API_KEY) {
+      logger.warn('LetsFG API key not configured, returning empty array');
+      return [];
+    }
+
+    const payload = {
+      origin,
+      destination,
+      date_from: departureDate,
+      adults: 1,
+      currency: 'USD',
+      limit: 50,
+      sort: 'price',
+    };
+
+    const primaryPath = env.LETSFG_USE_SANDBOX !== 'false' ? '/sandbox/flights/search' : '/flights/search';
+
     try {
-      if (!env.LETSFG_API_KEY) {
-        logger.warn('LetsFG API key not configured, returning empty array');
-        return [];
-      }
-
-      // Use sandbox path in development to avoid billing
-      const searchPath = env.NODE_ENV === 'production'
-        ? '/flights/search'
-        : '/sandbox/flights/search';
-
-      const response = await this.client.post(searchPath, {
-        origin,
-        destination,
-        date_from: departureDate,
-        adults: 1,
-        currency: 'USD',
-        limit: 50,
-        sort: 'price',
-      });
-
+      const response = await this.client.post(primaryPath, payload);
       const offers = response.data?.offers || [];
-
-      // Map LetsFG offer shape → our internal LetsFGFlight interface
       return offers.map((offer: any) => this.mapOffer(offer));
     } catch (error: any) {
-      logger.error(`LetsFG search failed (${error.response?.status || 'network'}): ${error.message}`);
-      // Fallback: return empty array so local admin flights still display
+      const status = error.response?.status;
+      const detail = error.response?.data?.detail || error.message;
+
+      logger.warn(`LetsFG search on ${primaryPath} failed (${status}): ${detail}`);
+
+      // If production endpoint returned 402 (Payment Required - unfunded prepaid balance) or auth error, fallback to sandbox
+      if (primaryPath === '/flights/search' && (status === 402 || status === 401 || status === 403)) {
+        logger.info('Falling back to LetsFG sandbox endpoint (/sandbox/flights/search)...');
+        try {
+          const sandboxResponse = await this.client.post('/sandbox/flights/search', payload);
+          const offers = sandboxResponse.data?.offers || [];
+          return offers.map((offer: any) => this.mapOffer(offer));
+        } catch (sandboxError: any) {
+          logger.error(`LetsFG sandbox fallback also failed: ${sandboxError.message}`);
+        }
+      }
+
       return [];
     }
   }
 
   /**
    * Maps a raw LetsFG offer to our internal LetsFGFlight shape.
-   *
-   * Actual LetsFG offer shape (from sandbox):
-   *   offer.id, offer.price, offer.currency, offer.airlines[]
-   *   offer.outbound.segments[].origin, .destination, .departure, .arrival,
-   *     .airline, .airline_name, .flight_no, .duration_seconds, .cabin_class
-   *   offer.outbound.stopovers, offer.outbound.total_duration_seconds
-   *   offer.booking_url, offer.availability_seats, offer.conditions
    */
   private mapOffer(offer: any): LetsFGFlight {
     const outbound = offer.outbound || {};

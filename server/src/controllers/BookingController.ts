@@ -37,7 +37,7 @@ export class BookingController {
           origin: z.string(),
           destination: z.string(),
           departureDate: z.string(),
-          returnDate: z.string().optional()
+          returnDate: z.preprocess((val) => (val === '' || val === null ? undefined : val), z.string().optional())
         })).min(1),
         passengerName: z.string().min(2),
         email: z.string().email(),
