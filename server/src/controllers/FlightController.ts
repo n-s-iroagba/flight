@@ -185,7 +185,7 @@ export class FlightController {
       const page = parseInt(req.query.page as string) || 1;
       const limit = parseInt(req.query.limit as string) || 20;
       const result = await flightService.listPrivateJets(page, limit);
-      return sendSuccess(res, result);
+      return sendSuccess(res, result.flights, undefined, { total: result.total, page, limit, totalPages: result.totalPages });
     } catch (error: any) {
       return sendError(res, error.message);
     }

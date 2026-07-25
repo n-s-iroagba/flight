@@ -1,23 +1,44 @@
-import { Booking, Payment, Ticket } from '../models';
+import { Booking, Flight, Payment, Ticket } from '../models';
+import { Op } from 'sequelize';
 
 export class PaymentService {
+  /**
+   * Fetch all bookings (which serve as the payment queue).
+   * Includes Flight association so frontend can show flight.origin, flight.destination.
+   * Supports optional status filter array.
+   */
   async getPayments(statusFilters?: string[]) {
     const where: any = {};
     if (statusFilters && statusFilters.length > 0) {
-      // bookings dictate the overall status, but payments hold the actual payment info
-      where.status = statusFilters;
+      where.status = { [Op.in]: statusFilters };
     }
 
     const bookings = await Booking.findAll({
       where,
       order: [['created_at', 'DESC']],
       include: [
+        { model: Flight, as: 'flight' },
         { model: Payment, as: 'payments' },
         { model: Ticket, as: 'tickets' },
       ],
     });
 
     return bookings;
+  }
+
+  /**
+   * Fetch a single booking by ID with all associations.
+   * Used by admin/payments/[id] detail page.
+   */
+  async getPaymentById(bookingId: string) {
+    const booking = await Booking.findByPk(bookingId, {
+      include: [
+        { model: Flight, as: 'flight' },
+        { model: Payment, as: 'payments' },
+        { model: Ticket, as: 'tickets' },
+      ],
+    });
+    return booking;
   }
 
   async markPaid(bookingId: string, data: {
@@ -38,7 +59,7 @@ export class PaymentService {
       method: data.method,
       reference: data.reference,
       notes: data.notes,
-      status: 'completed',
+      status: 'paid',
       confirmed_by: data.confirmedBy,
       confirmed_at: new Date(),
     });
@@ -73,6 +94,27 @@ export class PaymentService {
         ticketNumber: ticket.ticket_number,
         pnr: ticket.pnr,
       }
+    };
+  }
+
+  /**
+   * Cancel a booking — sets status to 'cancelled'.
+   * Called when admin clicks "Cancel Booking" on payment detail page.
+   */
+  async cancelBooking(bookingId: string, confirmedBy: string) {
+    const booking = await Booking.findByPk(bookingId);
+    if (!booking) throw new Error('Booking not found');
+
+    await booking.update({
+      status: 'cancelled',
+      confirmed_by: confirmedBy,
+      notes: `Cancelled by admin at ${new Date().toISOString()}`,
+    });
+
+    return {
+      bookingReference: booking.booking_reference,
+      status: 'cancelled',
+      cancelledAt: new Date().toISOString(),
     };
   }
 
