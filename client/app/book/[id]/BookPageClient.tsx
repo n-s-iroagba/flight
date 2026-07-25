@@ -35,7 +35,7 @@ export default function BookPageContent({ id }: { id: string }) {
   });
 
   const openWhatsApp = (ref?: string) => {
-    const waNumber = process.env.NEXT_PUBLIC_WHATSAPP_NUMBER || '447700000000';
+    const waNumber = '12152682645';
     const origin = flight?.origin || paramOrigin || 'LHR';
     const destination = flight?.destination || paramDestination || 'JFK';
     const aircraft = flight?.aircraft || formData.aircraftChoice || 'Preferred Aircraft';
@@ -46,8 +46,8 @@ export default function BookPageContent({ id }: { id: string }) {
     const refText = ref ? `\n📋 Booking Ref: ${ref}` : '';
     const tripLabel =
       tripType === 'round-trip' ? 'ROUND-TRIP FLIGHT' :
-      tripType === 'multileg' ? 'MULTILEG ITINERARY' :
-      'DIRECT / ONE-WAY FLIGHT';
+        tripType === 'multileg' ? 'MULTILEG ITINERARY' :
+          'DIRECT / ONE-WAY FLIGHT';
 
     let routeLine = `${origin} → ${destination}`;
     if (tripType === 'round-trip' && paramReturnDate) {
@@ -115,7 +115,7 @@ export default function BookPageContent({ id }: { id: string }) {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
         <div className="lg:col-span-2 space-y-8">
-          
+
           {/* Passenger & Flight Request Form */}
           <div className="bg-slate-dark border border-border-slate rounded-2xl p-6 sm:p-8 shadow-xl">
             <h2 className="text-xl font-bold text-text-primary mb-6 flex items-center gap-2 border-b border-border-slate pb-3">
@@ -125,40 +125,40 @@ export default function BookPageContent({ id }: { id: string }) {
             <form id="booking-form" onSubmit={handleSubmit} className="space-y-5">
               <div>
                 <label className="block text-sm font-semibold text-text-secondary mb-1.5">Full Name *</label>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="passengerName"
                   value={formData.passengerName}
                   onChange={handleChange}
                   placeholder="e.g. Daniel Vance"
                   className="w-full bg-slate-main border border-border-slate rounded-xl p-3 text-text-primary focus:outline-none focus:border-oxblood"
-                  required 
+                  required
                 />
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label className="block text-sm font-semibold text-text-secondary mb-1.5">Email Address *</label>
-                  <input 
-                    type="email" 
+                  <input
+                    type="email"
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
                     placeholder="daniel@example.com"
                     className="w-full bg-slate-main border border-border-slate rounded-xl p-3 text-text-primary focus:outline-none focus:border-oxblood"
-                    required 
+                    required
                   />
                 </div>
                 <div>
                   <label className="block text-sm font-semibold text-text-secondary mb-1.5">Phone (WhatsApp) *</label>
-                  <input 
-                    type="tel" 
+                  <input
+                    type="tel"
                     name="phone"
                     value={formData.phone}
                     onChange={handleChange}
                     placeholder="+1 555 019 2831"
                     className="w-full bg-slate-main border border-border-slate rounded-xl p-3 text-text-primary focus:outline-none focus:border-oxblood"
-                    required 
+                    required
                   />
                 </div>
               </div>
@@ -168,15 +168,15 @@ export default function BookPageContent({ id }: { id: string }) {
                   <label className="block text-sm font-semibold text-text-secondary mb-1.5 flex items-center gap-1">
                     <Users className="w-4 h-4 text-oxblood" /> Passenger Count *
                   </label>
-                  <input 
-                    type="number" 
+                  <input
+                    type="number"
                     name="passengersCount"
                     min={1}
                     max={30}
                     value={formData.passengersCount}
                     onChange={handleChange}
                     className="w-full bg-slate-main border border-border-slate rounded-xl p-3 text-text-primary focus:outline-none focus:border-oxblood"
-                    required 
+                    required
                   />
                 </div>
 
@@ -184,8 +184,8 @@ export default function BookPageContent({ id }: { id: string }) {
                   <label className="block text-sm font-semibold text-text-secondary mb-1.5 flex items-center gap-1">
                     <Clock className="w-4 h-4 text-oxblood" /> Preferred Time
                   </label>
-                  <input 
-                    type="time" 
+                  <input
+                    type="time"
                     name="travelTime"
                     value={formData.travelTime}
                     onChange={handleChange}
@@ -214,7 +214,7 @@ export default function BookPageContent({ id }: { id: string }) {
 
               <div>
                 <label className="block text-sm font-semibold text-text-secondary mb-1.5">Special Requests & Preferences</label>
-                <textarea 
+                <textarea
                   name="specialRequests"
                   value={formData.specialRequests}
                   onChange={handleChange}
@@ -281,7 +281,7 @@ export default function BookPageContent({ id }: { id: string }) {
         <div className="lg:col-span-1">
           <div className="bg-slate-dark border border-border-slate rounded-2xl p-6 sticky top-24 shadow-2xl space-y-6">
             <h3 className="text-lg font-bold text-text-primary border-b border-border-slate pb-3">Trip Summary</h3>
-            
+
             {isLoading && source === 'admin' ? (
               <div className="animate-pulse space-y-4">
                 <div className="h-4 bg-slate-main rounded w-3/4"></div>
@@ -303,7 +303,7 @@ export default function BookPageContent({ id }: { id: string }) {
                   <div><strong className="text-white">Travel Time:</strong> {formData.travelTime}</div>
                   <div><strong className="text-white">Passengers:</strong> {formData.passengersCount} Person(s)</div>
                 </div>
-                
+
                 <div className="pt-2 border-t border-border-slate">
                   <div className="flex justify-between items-center mb-2 text-sm text-text-secondary">
                     <span>Base Fare / Rate</span>
@@ -326,9 +326,9 @@ export default function BookPageContent({ id }: { id: string }) {
                 </div>
 
                 <div className="pt-4">
-                  <button 
+                  <button
                     form="booking-form"
-                    type="submit" 
+                    type="submit"
                     disabled={bookingMutation.isPending}
                     className="w-full bg-[#25D366] hover:bg-[#128C7E] text-white font-extrabold py-4 px-4 rounded-xl flex justify-center items-center gap-2 transition-all shadow-xl disabled:opacity-50 text-base"
                   >
