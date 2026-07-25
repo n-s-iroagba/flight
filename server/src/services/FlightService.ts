@@ -12,46 +12,133 @@ export class FlightService {
     return flights.map(f => ({ ...f.toJSON(), source: 'admin' }));
   }
 
-  async searchFlights(origin: string, destination: string, departureDate: string) {
+  async searchSingleLeg(origin: string, destination: string, departureDate: string, directOnly?: boolean) {
     const startDate = new Date(`${departureDate}T00:00:00.000Z`);
     const endDate = new Date(`${departureDate}T23:59:59.999Z`);
 
-    const adminFlightsP = Flight.findAll({
-      where: {
-        origin,
-        destination,
-        status: 'active',
-        is_private_jet: false,
-        departure_time: {
-          [Op.between]: [startDate, endDate],
-        },
+    const adminWhere: any = {
+      origin,
+      destination,
+      status: 'active',
+      is_private_jet: false,
+      departure_time: {
+        [Op.between]: [startDate, endDate],
       },
-    });
+    };
 
+    if (directOnly) {
+      adminWhere.stops = 0;
+    }
+
+    const adminFlightsP = Flight.findAll({ where: adminWhere });
     const externalFlightsP = letsFGService.searchFlights(origin, destination, departureDate);
 
     const [adminFlights, externalFlights] = await Promise.all([adminFlightsP, externalFlightsP]);
 
-    const formattedAdminFlights = adminFlights.map((f) => ({
+    let formattedAdminFlights = adminFlights.map((f) => ({
       ...f.toJSON(),
       source: 'admin',
-      stops: 0,
+      stops: f.stops ?? 0,
       duration: this.calculateDuration(f.departure_time, f.arrival_time),
     }));
 
-    const formattedExternalFlights = externalFlights.map((f) => ({
+    let formattedExternalFlights = externalFlights.map((f) => ({
       ...f,
       source: 'letsfg',
     }));
 
+    if (directOnly) {
+      formattedAdminFlights = formattedAdminFlights.filter(f => f.stops === 0);
+      formattedExternalFlights = formattedExternalFlights.filter(f => f.stops === 0);
+    }
+
     const allFlights = [...formattedAdminFlights, ...formattedExternalFlights].sort((a, b) => a.price - b.price);
     return allFlights;
+  }
+
+  async searchFlights(
+    origin: string,
+    destination: string,
+    departureDate: string,
+    options?: {
+      tripType?: 'one-way' | 'direct' | 'round-trip' | 'multileg';
+      returnDate?: string;
+      legs?: Array<{ origin: string; destination: string; departureDate: string }>;
+      directOnly?: boolean;
+    }
+  ) {
+    const isDirectOnly = options?.directOnly || options?.tripType === 'direct';
+
+    if (options?.tripType === 'round-trip' && options?.returnDate) {
+      const [outbound, inbound] = await Promise.all([
+        this.searchSingleLeg(origin, destination, departureDate, isDirectOnly),
+        this.searchSingleLeg(destination, origin, options.returnDate, isDirectOnly),
+      ]);
+      return {
+        tripType: 'round-trip',
+        outbound,
+        inbound,
+        flights: outbound,
+      };
+    }
+
+    if (options?.tripType === 'multileg' && options?.legs && options.legs.length > 0) {
+      const legsResults = await Promise.all(
+        options.legs.map(async (leg, index) => {
+          const flights = await this.searchSingleLeg(
+            leg.origin,
+            leg.destination,
+            leg.departureDate,
+            isDirectOnly
+          );
+          return {
+            legIndex: index + 1,
+            origin: leg.origin,
+            destination: leg.destination,
+            departureDate: leg.departureDate,
+            flights,
+          };
+        })
+      );
+      return {
+        tripType: 'multileg',
+        legsResults,
+        flights: legsResults[0]?.flights || [],
+      };
+    }
+
+    const flights = await this.searchSingleLeg(origin, destination, departureDate, isDirectOnly);
+    return {
+      tripType: isDirectOnly ? 'direct' : 'one-way',
+      flights,
+    };
   }
 
   async getFlightDetails(id: string) {
     const flight = await Flight.findByPk(id);
     if (!flight) return null;
     return { ...flight.toJSON(), source: 'admin' };
+  }
+
+  async updateFlight(id: string, data: any) {
+    const flight = await Flight.findByPk(id);
+    if (!flight) throw new Error('Flight not found');
+    const updateData = { ...data };
+    if (data.departureTime) updateData.departure_time = new Date(data.departureTime);
+    if (data.arrivalTime) updateData.arrival_time = new Date(data.arrivalTime);
+    if (data.airlineCode) updateData.airline_code = data.airlineCode;
+    if (data.flightNumber) updateData.flight_number = data.flightNumber;
+    if (data.totalSeats) updateData.total_seats = data.totalSeats;
+    if (data.cabinClass) updateData.cabin_class = data.cabinClass;
+    await flight.update(updateData);
+    return flight;
+  }
+
+  async deleteFlight(id: string) {
+    const flight = await Flight.findByPk(id);
+    if (!flight) throw new Error('Flight not found');
+    await flight.destroy();
+    return true;
   }
 
   // Private Jet Management

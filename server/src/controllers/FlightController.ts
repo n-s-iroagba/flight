@@ -18,15 +18,22 @@ export class FlightController {
   async search(req: Request, res: Response) {
     try {
       const schema = z.object({
-        origin: z.string().length(3),
-        destination: z.string().length(3),
-        departureDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        origin: z.string().length(3).optional(),
+        destination: z.string().length(3).optional(),
+        departureDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        returnDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+        tripType: z.enum(['one-way', 'round-trip', 'multileg', 'direct']).optional(),
+        directOnly: z.boolean().optional(),
+        legs: z.array(z.object({
+          origin: z.string().length(3),
+          destination: z.string().length(3),
+          departureDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+        })).optional(),
         passengers: z.object({
           adults: z.number().min(1),
           children: z.number().min(0).optional(),
           infants: z.number().min(0).optional(),
         }).optional(),
-        tripType: z.enum(['one-way', 'round-trip']).optional(),
       });
 
       const parsed = schema.safeParse(req.body);
@@ -34,27 +41,39 @@ export class FlightController {
         return sendError(res, 'Validation failed', 'BAD_REQUEST', parsed.error.format(), 400);
       }
 
+      const { origin, destination, departureDate, returnDate, tripType, directOnly, legs } = parsed.data;
+
       const startTime = Date.now();
-      const flights = await flightService.searchFlights(
-        parsed.data.origin,
-        parsed.data.destination,
-        parsed.data.departureDate
+      const searchResult = await flightService.searchFlights(
+        origin || legs?.[0]?.origin || '',
+        destination || legs?.[0]?.destination || '',
+        departureDate || legs?.[0]?.departureDate || '',
+        { tripType, returnDate, legs, directOnly }
       );
 
       const executionTime = Date.now() - startTime;
+      const flightsList = (searchResult as any).flights || [];
 
       const metadata = {
         sources: {
-          admin: { count: flights.filter(f => f.source === 'admin').length },
-          letsfg: { count: flights.filter(f => f.source === 'letsfg').length }
+          admin: { count: flightsList.filter((f: any) => f.source === 'admin').length },
+          letsfg: { count: flightsList.filter((f: any) => f.source === 'letsfg').length }
         },
         searchId: Math.random().toString(36).substring(7),
-        executionTime
+        executionTime,
+        tripType: (searchResult as any).tripType || tripType || 'one-way'
       };
 
-      return sendSuccess(res, { flights, total: flights.length, page: 1, limit: flights.length }, undefined, metadata);
-    } catch (error: any) {
+      const responsePayload = {
+        ...(typeof searchResult === 'object' ? searchResult : {}),
+        flights: flightsList,
+        total: flightsList.length,
+        page: 1,
+        limit: flightsList.length
+      };
 
+      return sendSuccess(res, responsePayload, undefined, metadata);
+    } catch (error: any) {
       return sendError(res, error.message);
     }
   }
@@ -114,6 +133,7 @@ export class FlightController {
         baggage: z.string().optional(),
         cancellationPolicy: z.string().optional(),
         cabinClass: z.enum(['economy', 'premium_economy', 'business', 'first']),
+        stops: z.number().min(0).optional(),
       });
 
       const parsed = schema.safeParse(req.body);
@@ -129,7 +149,8 @@ export class FlightController {
         available_seats: parsed.data.totalSeats,
         airline_code: parsed.data.airlineCode,
         flight_number: parsed.data.flightNumber,
-        cabin_class: parsed.data.cabinClass
+        cabin_class: parsed.data.cabinClass,
+        stops: parsed.data.stops ?? 0,
       });
 
       return sendSuccess(res, flight, 'Flight created successfully', undefined, 201);
@@ -141,10 +162,7 @@ export class FlightController {
   async update(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const flight = await Flight.findByPk(id);
-      if (!flight) return sendError(res, 'Flight not found', 'NOT_FOUND', null, 404);
-
-      await flight.update(req.body);
+      const flight = await flightService.updateFlight(id, req.body);
       return sendSuccess(res, flight, 'Flight updated successfully');
     } catch (error: any) {
       return sendError(res, error.message);
@@ -154,10 +172,7 @@ export class FlightController {
   async remove(req: Request, res: Response) {
     try {
       const { id } = req.params;
-      const flight = await Flight.findByPk(id);
-      if (!flight) return sendError(res, 'Flight not found', 'NOT_FOUND', null, 404);
-
-      await flight.destroy();
+      await flightService.deleteFlight(id);
       return sendSuccess(res, null, 'Flight deleted successfully');
     } catch (error: any) {
       return sendError(res, error.message);

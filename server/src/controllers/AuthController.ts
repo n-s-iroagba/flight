@@ -7,8 +7,8 @@ export class AuthController {
   async login(req: Request, res: Response) {
     try {
       const schema = z.object({
-        email: z.string().email(),
-        password: z.string().min(6),
+        username: z.string().min(1, 'Username is required'),
+        password: z.string().min(1, 'Password is required'),
       });
 
       const parsed = schema.safeParse(req.body);
@@ -16,7 +16,7 @@ export class AuthController {
         return sendError(res, 'Validation failed', 'BAD_REQUEST', parsed.error.format(), 400);
       }
 
-      const result = await authService.login(parsed.data.email, parsed.data.password);
+      const result = await authService.login(parsed.data.username, parsed.data.password);
       return sendSuccess(res, result, 'Login successful');
     } catch (error: any) {
       return sendError(res, error.message, 'UNAUTHORIZED', null, 401);

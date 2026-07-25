@@ -20,6 +20,7 @@ export interface FlightAttributes {
   cabin_class: 'economy' | 'premium_economy' | 'business' | 'first';
   status: 'active' | 'inactive' | 'sold_out';
   is_private_jet?: boolean;
+  stops?: number;
   current_latitude?: number;
   current_longitude?: number;
   current_location?: string;
@@ -27,7 +28,7 @@ export interface FlightAttributes {
   updated_at?: Date;
 }
 
-interface FlightCreationAttributes extends Optional<FlightAttributes, 'id' | 'currency' | 'status' | 'is_private_jet' | 'current_latitude' | 'current_longitude' | 'current_location' | 'created_at' | 'updated_at'> {}
+interface FlightCreationAttributes extends Optional<FlightAttributes, 'id' | 'currency' | 'status' | 'is_private_jet' | 'stops' | 'current_latitude' | 'current_longitude' | 'current_location' | 'created_at' | 'updated_at'> {}
 
 export class Flight extends Model<FlightAttributes, FlightCreationAttributes> implements FlightAttributes {
   public id!: string;
@@ -48,6 +49,7 @@ export class Flight extends Model<FlightAttributes, FlightCreationAttributes> im
   public cabin_class!: 'economy' | 'premium_economy' | 'business' | 'first';
   public status!: 'active' | 'inactive' | 'sold_out';
   public is_private_jet?: boolean;
+  public stops?: number;
   public current_latitude?: number;
   public current_longitude?: number;
   public current_location?: string;
@@ -87,6 +89,10 @@ Flight.init({
   is_private_jet: {
     type: DataTypes.BOOLEAN,
     defaultValue: false
+  },
+  stops: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
   },
   current_latitude: {
     type: DataTypes.DECIMAL(10, 6),

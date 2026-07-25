@@ -74,6 +74,16 @@ export const createAdminFlight = async (data: any) => {
   return response.data.data;
 };
 
+export const updateAdminFlight = async (id: string, data: any) => {
+  const response = await api.patch(`/admin/flights/${id}`, data);
+  return response.data.data;
+};
+
+export const deleteAdminFlight = async (id: string) => {
+  const response = await api.delete(`/admin/flights/${id}`);
+  return response.data.data;
+};
+
 export const getAdminPrivateJets = async (params?: any) => {
   const response = await api.get('/admin/private-jets', { params });
   return response.data.data;
@@ -129,4 +139,10 @@ export const confirmTicketDelivery = async (id: string, data: any) => {
   return response.data.data;
 };
 
+export const sendAdminMail = async (data: { to: string; subject: string; message?: string; html?: string }) => {
+  const response = await api.post('/admin/mail/send', data);
+  return response.data;
+};
+
 export default api;
+

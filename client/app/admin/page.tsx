@@ -1,8 +1,8 @@
 'use client';
 
 import { useQuery } from '@tanstack/react-query';
-import { getStats } from '../../lib/api';
-import { Plane, CreditCard, Users, TrendingUp } from 'lucide-react';
+import { getStats, getAdminPayments } from '../../lib/api';
+import { Plane, CreditCard, Users, TrendingUp, Mail, Crown } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminDashboard() {
@@ -11,6 +11,14 @@ export default function AdminDashboard() {
     queryFn: getStats,
     initialData: { totalFlights: 0, airlines: 0, destinations: 0, averageRating: 0 }
   });
+
+  const { data: paymentsData } = useQuery({
+    queryKey: ['admin-payments'],
+    queryFn: () => getAdminPayments(),
+  });
+
+  const summary = paymentsData?.summary || { pending: 0, processing: 0, paid: 0, failed: 0 };
+  const activeBookings = (summary.pending || 0) + (summary.processing || 0);
 
   return (
     <div>
@@ -54,7 +62,7 @@ export default function AdminDashboard() {
             </div>
             <div>
               <div className="text-sm text-text-secondary">Active Bookings</div>
-              <div className="text-2xl font-bold text-text-primary">42</div>
+              <div className="text-2xl font-bold text-text-primary">{activeBookings}</div>
             </div>
           </div>
         </div>
@@ -77,10 +85,24 @@ export default function AdminDashboard() {
         <div className="bg-slate-main border border-border-slate rounded-xl p-6">
           <h2 className="text-lg font-bold text-text-primary mb-4">Quick Actions</h2>
           <div className="space-y-4">
+            <Link href="/admin/mail" className="flex items-center justify-between p-4 rounded-lg bg-slate-dark hover:bg-slate-dark/80 transition-colors group border border-border-slate hover:border-oxblood">
+              <div className="flex items-center gap-3 text-text-primary font-medium">
+                <Mail className="w-5 h-5 text-oxblood group-hover:text-oxblood-bright" />
+                Dispatch Email (booking@swiftwings.online)
+              </div>
+              <span className="text-text-secondary">→</span>
+            </Link>
+            <Link href="/admin/private-jets" className="flex items-center justify-between p-4 rounded-lg bg-slate-dark hover:bg-slate-dark/80 transition-colors group border border-border-slate hover:border-oxblood">
+              <div className="flex items-center gap-3 text-text-primary font-medium">
+                <Crown className="w-5 h-5 text-amber-400" />
+                Manage Private Jet Charters
+              </div>
+              <span className="text-text-secondary">→</span>
+            </Link>
             <Link href="/admin/flights/create" className="flex items-center justify-between p-4 rounded-lg bg-slate-dark hover:bg-slate-dark/80 transition-colors group border border-border-slate hover:border-oxblood">
               <div className="flex items-center gap-3 text-text-primary font-medium">
                 <Plane className="w-5 h-5 text-oxblood group-hover:text-oxblood-bright" />
-                Add New Flight
+                Add New Commercial Flight
               </div>
               <span className="text-text-secondary">→</span>
             </Link>
@@ -94,6 +116,7 @@ export default function AdminDashboard() {
           </div>
         </div>
       </div>
+
     </div>
   );
 }

@@ -1,8 +1,9 @@
 'use client';
 
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { useRouter } from 'next/navigation';
 import { getAdminPayments, markPaymentPaid } from '../../../../lib/api';
+import api from '../../../../lib/api';
 import Link from 'next/link';
 import { useState, use } from 'react';
 
@@ -11,6 +12,7 @@ export default function PaymentDetail({ params }: { params: Promise<{ id: string
   const id = resolvedParams.id;
 
   const router = useRouter();
+  const queryClient = useQueryClient();
   const [method, setMethod] = useState('bank_transfer');
   const [reference, setReference] = useState('');
   
@@ -42,12 +44,30 @@ export default function PaymentDetail({ params }: { params: Promise<{ id: string
       }
     }),
     onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-payments'] });
       router.push(`/admin/payments/${id}/delivery`);
+    }
+  });
+
+  const cancelMutation = useMutation({
+    mutationFn: () => api.patch(`/admin/payments/${id}/mark-paid`, {
+      paymentConfirmation: { method: 'cancelled', reference: 'ADMIN_CANCELLED', amount: 0, currency: 'USD' },
+      status: 'cancelled'
+    }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-payments'] });
+      router.push('/admin/payments');
     }
   });
 
   const handleConfirm = () => {
     markPaidMutation.mutate();
+  };
+
+  const handleCancel = () => {
+    if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
+      cancelMutation.mutate();
+    }
   };
 
   if (isLoading) return <div className="text-text-primary">Loading...</div>;
@@ -124,8 +144,12 @@ export default function PaymentDetail({ params }: { params: Promise<{ id: string
                 >
                   {markPaidMutation.isPending ? 'Confirming...' : '✅ Confirm Payment'}
                 </button>
-                <button className="flex-1 bg-slate-dark hover:bg-red-error/10 text-red-error border border-red-error py-3 rounded-lg font-bold transition-colors">
-                  ❌ Cancel Booking
+                <button 
+                  onClick={handleCancel}
+                  disabled={cancelMutation.isPending || payment.status === 'cancelled'}
+                  className="flex-1 bg-slate-dark hover:bg-red-error/10 text-red-error border border-red-error py-3 rounded-lg font-bold transition-colors disabled:opacity-50"
+                >
+                  {cancelMutation.isPending ? 'Cancelling...' : '❌ Cancel Booking'}
                 </button>
               </div>
             </div>

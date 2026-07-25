@@ -22,14 +22,15 @@ export default function CreateFlight() {
     cabinClass: 'economy',
     aircraft: '',
     baggage: '',
-    cancellationPolicy: ''
+    cancellationPolicy: '',
+    stops: 0
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' || name === 'totalSeats' ? Number(value) : value
+      [name]: name === 'price' || name === 'totalSeats' || name === 'stops' ? Number(value) : value
     }));
   };
 
@@ -104,7 +105,7 @@ export default function CreateFlight() {
 
         <div className="p-6 border-b border-border-slate">
           <h2 className="text-lg font-bold text-text-primary mb-4">Pricing & Availability</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm text-text-secondary mb-1">Price *</label>
               <input type="number" name="price" value={formData.price} onChange={handleChange} min={0} required className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
@@ -120,6 +121,10 @@ export default function CreateFlight() {
             <div>
               <label className="block text-sm text-text-secondary mb-1">Total Seats *</label>
               <input type="number" name="totalSeats" value={formData.totalSeats} onChange={handleChange} min={1} required className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Stops (0 = Direct)</label>
+              <input type="number" name="stops" value={formData.stops ?? 0} onChange={handleChange} min={0} className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
             </div>
           </div>
         </div>

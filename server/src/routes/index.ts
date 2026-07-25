@@ -3,6 +3,7 @@ import flightController from '../controllers/FlightController';
 import bookingController from '../controllers/BookingController';
 import paymentController from '../controllers/PaymentController';
 import authController from '../controllers/AuthController';
+import mailController from '../controllers/MailController';
 import { authMiddleware } from '../middlewares/auth';
 
 const router = Router();
@@ -58,5 +59,8 @@ router.patch('/admin/payments/:id/mark-paid', paymentController.markPaid);
 router.post('/admin/payments/:id/send-ticket/whatsapp', paymentController.sendTicketWhatsapp);
 router.post('/admin/payments/:id/send-ticket/email', paymentController.sendTicketEmail);
 router.patch('/admin/payments/:id/confirm-delivery', paymentController.confirmDelivery);
+
+// Admin Mail Dispatch
+router.post('/admin/mail/send', mailController.sendMail);
 
 export default router;

@@ -3,7 +3,8 @@ import sequelize from '../config/database';
 
 export interface AdminUserAttributes {
   id: string;
-  email: string;
+  username: string;
+  email?: string | null;
   password_hash: string;
   full_name: string;
   role: 'admin' | 'super_admin';
@@ -12,11 +13,12 @@ export interface AdminUserAttributes {
   updated_at?: Date;
 }
 
-interface AdminUserCreationAttributes extends Optional<AdminUserAttributes, 'id' | 'role' | 'created_at' | 'updated_at'> {}
+interface AdminUserCreationAttributes extends Optional<AdminUserAttributes, 'id' | 'role' | 'created_at' | 'updated_at' | 'email'> {}
 
 export class AdminUser extends Model<AdminUserAttributes, AdminUserCreationAttributes> implements AdminUserAttributes {
   public id!: string;
-  public email!: string;
+  public username!: string;
+  public email?: string | null;
   public password_hash!: string;
   public full_name!: string;
   public role!: 'admin' | 'super_admin';
@@ -32,7 +34,8 @@ AdminUser.init({
     defaultValue: DataTypes.UUIDV4,
     primaryKey: true,
   },
-  email: { type: DataTypes.STRING(255), unique: true, allowNull: false },
+  username: { type: DataTypes.STRING(255), unique: true, allowNull: false },
+  email: { type: DataTypes.STRING(255), unique: true, allowNull: true },
   password_hash: { type: DataTypes.STRING(255), allowNull: false },
   full_name: { type: DataTypes.STRING(255), allowNull: false },
   role: { type: DataTypes.ENUM('admin', 'super_admin'), defaultValue: 'admin' },

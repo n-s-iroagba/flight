@@ -14,9 +14,16 @@ export default function Home() {
   const [bookingMode, setBookingMode] = useState<'commercial' | 'private_jet'>('commercial');
 
   // Commercial Flight State
+  const [commTripType, setCommTripType] = useState<'one-way' | 'round-trip' | 'multileg'>('one-way');
   const [origin, setOrigin] = useState('');
   const [destination, setDestination] = useState('');
   const [date, setDate] = useState('');
+  const [returnDate, setReturnDate] = useState('');
+  const [directOnly, setDirectOnly] = useState(false);
+  const [commLegs, setCommLegs] = useState<Array<{ origin: string; destination: string; departureDate: string }>>([
+    { origin: 'LHR', destination: 'JFK', departureDate: '' },
+    { origin: 'JFK', destination: 'DXB', departureDate: '' },
+  ]);
 
   // Private Jet State
   const [tripType, setTripType] = useState<'single' | 'round-trip' | 'multileg'>('single');
@@ -53,9 +60,35 @@ export default function Home() {
 
   const handleCommercialSearch = (e: React.FormEvent) => {
     e.preventDefault();
-    if (origin && destination && date) {
-      router.push(`/search?origin=${origin}&destination=${destination}&date=${date}`);
+    if (commTripType === 'multileg') {
+      const legsParam = encodeURIComponent(JSON.stringify(commLegs));
+      router.push(`/search?tripType=multileg&legs=${legsParam}&directOnly=${directOnly}`);
+      return;
     }
+
+    if (origin && destination && date) {
+      let query = `/search?tripType=${commTripType}&origin=${origin}&destination=${destination}&date=${date}&directOnly=${directOnly}`;
+      if (commTripType === 'round-trip' && returnDate) {
+        query += `&returnDate=${returnDate}`;
+      }
+      router.push(query);
+    }
+  };
+
+  const handleAddCommLeg = () => {
+    setCommLegs([...commLegs, { origin: '', destination: '', departureDate: '' }]);
+  };
+
+  const handleRemoveCommLeg = (index: number) => {
+    if (commLegs.length > 1) {
+      setCommLegs(commLegs.filter((_, idx) => idx !== index));
+    }
+  };
+
+  const handleCommLegChange = (index: number, field: string, value: string) => {
+    const updated = [...commLegs];
+    updated[index] = { ...updated[index], [field]: value };
+    setCommLegs(updated);
   };
 
   const handleAddLeg = () => {
@@ -155,47 +188,191 @@ export default function Home() {
 
             {/* COMMERCIAL SEARCH FORM */}
             {bookingMode === 'commercial' && (
-              <form onSubmit={handleCommercialSearch} className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                <div className="flex flex-col text-left">
-                  <label className="text-sm font-semibold text-text-secondary mb-1.5">Origin (IATA)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. LHR"
-                    value={origin}
-                    onChange={(e) => setOrigin(e.target.value.toUpperCase())}
-                    maxLength={3}
-                    className="bg-slate-main border border-border-slate rounded-xl p-3.5 text-text-primary focus:outline-none focus:border-oxblood uppercase font-mono"
-                    required
-                  />
+              <form onSubmit={handleCommercialSearch} className="space-y-5">
+                {/* Trip Options Bar */}
+                <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-main/60 p-3 rounded-xl border border-slate-800">
+                  <div className="flex flex-wrap gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setCommTripType('one-way')}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${commTripType === 'one-way'
+                        ? 'bg-oxblood text-white shadow'
+                        : 'bg-slate-dark text-text-secondary hover:text-white'
+                        }`}
+                    >
+                      One-Way / Direct
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCommTripType('round-trip')}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${commTripType === 'round-trip'
+                        ? 'bg-oxblood text-white shadow'
+                        : 'bg-slate-dark text-text-secondary hover:text-white'
+                        }`}
+                    >
+                      Round-Trip
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setCommTripType('multileg')}
+                      className={`px-4 py-2 rounded-lg text-xs font-bold transition-all ${commTripType === 'multileg'
+                        ? 'bg-oxblood text-white shadow'
+                        : 'bg-slate-dark text-text-secondary hover:text-white'
+                        }`}
+                    >
+                      Multileg Trip
+                    </button>
+                  </div>
+
+                  <label className="flex items-center gap-2 cursor-pointer text-xs font-medium text-text-secondary hover:text-white">
+                    <input
+                      type="checkbox"
+                      checked={directOnly}
+                      onChange={(e) => setDirectOnly(e.target.checked)}
+                      className="rounded border-border-slate text-oxblood focus:ring-oxblood bg-slate-main"
+                    />
+                    Direct Flights Only
+                  </label>
                 </div>
-                <div className="flex flex-col text-left">
-                  <label className="text-sm font-semibold text-text-secondary mb-1.5">Destination (IATA)</label>
-                  <input
-                    type="text"
-                    placeholder="e.g. JFK"
-                    value={destination}
-                    onChange={(e) => setDestination(e.target.value.toUpperCase())}
-                    maxLength={3}
-                    className="bg-slate-main border border-border-slate rounded-xl p-3.5 text-text-primary focus:outline-none focus:border-oxblood uppercase font-mono"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col text-left">
-                  <label className="text-sm font-semibold text-text-secondary mb-1.5">Departure Date</label>
-                  <input
-                    type="date"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    className="bg-slate-main border border-border-slate rounded-xl p-3.5 text-text-primary focus:outline-none focus:border-oxblood"
-                    required
-                  />
-                </div>
-                <div className="flex flex-col justify-end">
-                  <button type="submit" className="bg-oxblood hover:bg-oxblood-bright text-text-primary font-bold rounded-xl p-3.5 flex justify-center items-center gap-2 transition-all shadow-lg">
-                    <Search className="w-5 h-5" />
-                    Search Flights
-                  </button>
-                </div>
+
+                {commTripType !== 'multileg' ? (
+                  <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                    <div className="flex flex-col text-left">
+                      <label className="text-sm font-semibold text-text-secondary mb-1.5">Origin (IATA)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. LHR"
+                        value={origin}
+                        onChange={(e) => setOrigin(e.target.value.toUpperCase())}
+                        maxLength={3}
+                        className="bg-slate-main border border-border-slate rounded-xl p-3.5 text-text-primary focus:outline-none focus:border-oxblood uppercase font-mono"
+                        required
+                      />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <label className="text-sm font-semibold text-text-secondary mb-1.5">Destination (IATA)</label>
+                      <input
+                        type="text"
+                        placeholder="e.g. JFK"
+                        value={destination}
+                        onChange={(e) => setDestination(e.target.value.toUpperCase())}
+                        maxLength={3}
+                        className="bg-slate-main border border-border-slate rounded-xl p-3.5 text-text-primary focus:outline-none focus:border-oxblood uppercase font-mono"
+                        required
+                      />
+                    </div>
+                    <div className="flex flex-col text-left">
+                      <label className="text-sm font-semibold text-text-secondary mb-1.5">Departure Date</label>
+                      <input
+                        type="date"
+                        value={date}
+                        onChange={(e) => setDate(e.target.value)}
+                        className="bg-slate-main border border-border-slate rounded-xl p-3.5 text-text-primary focus:outline-none focus:border-oxblood"
+                        required
+                      />
+                    </div>
+
+                    {commTripType === 'round-trip' ? (
+                      <div className="flex flex-col text-left">
+                        <label className="text-sm font-semibold text-text-secondary mb-1.5">Return Date</label>
+                        <input
+                          type="date"
+                          value={returnDate}
+                          onChange={(e) => setReturnDate(e.target.value)}
+                          className="bg-slate-main border border-border-slate rounded-xl p-3.5 text-text-primary focus:outline-none focus:border-oxblood"
+                          required
+                        />
+                      </div>
+                    ) : (
+                      <div className="flex flex-col justify-end">
+                        <button type="submit" className="bg-oxblood hover:bg-oxblood-bright text-text-primary font-bold rounded-xl p-3.5 flex justify-center items-center gap-2 transition-all shadow-lg">
+                          <Search className="w-5 h-5" />
+                          Search Flights
+                        </button>
+                      </div>
+                    )}
+
+                    {commTripType === 'round-trip' && (
+                      <div className="md:col-span-4 flex justify-end">
+                        <button type="submit" className="bg-oxblood hover:bg-oxblood-bright text-text-primary font-bold rounded-xl px-8 py-3.5 flex justify-center items-center gap-2 transition-all shadow-lg">
+                          <Search className="w-5 h-5" />
+                          Search Round-Trip Flights
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                ) : (
+                  /* Multileg Commercial Form */
+                  <div className="space-y-3">
+                    {commLegs.map((leg, idx) => (
+                      <div key={idx} className="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-main p-4 rounded-xl border border-slate-800 relative">
+                        <div>
+                          <label className="text-xs text-text-secondary mb-1 block">Leg #{idx + 1} Origin (IATA)</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. LHR"
+                            value={leg.origin}
+                            onChange={(e) => handleCommLegChange(idx, 'origin', e.target.value.toUpperCase())}
+                            maxLength={3}
+                            className="w-full bg-slate-dark border border-slate-700 rounded-lg p-2.5 text-white font-mono text-sm uppercase"
+                            required
+                          />
+                        </div>
+                        <div>
+                          <label className="text-xs text-text-secondary mb-1 block">Leg #{idx + 1} Destination (IATA)</label>
+                          <input
+                            type="text"
+                            placeholder="e.g. JFK"
+                            value={leg.destination}
+                            onChange={(e) => handleCommLegChange(idx, 'destination', e.target.value.toUpperCase())}
+                            maxLength={3}
+                            className="w-full bg-slate-dark border border-slate-700 rounded-lg p-2.5 text-white font-mono text-sm uppercase"
+                            required
+                          />
+                        </div>
+                        <div className="flex items-end justify-between gap-2">
+                          <div className="flex-1">
+                            <label className="text-xs text-text-secondary mb-1 block">Departure Date</label>
+                            <input
+                              type="date"
+                              value={leg.departureDate}
+                              onChange={(e) => handleCommLegChange(idx, 'departureDate', e.target.value)}
+                              className="w-full bg-slate-dark border border-slate-700 rounded-lg p-2.5 text-white text-sm"
+                              required
+                            />
+                          </div>
+                          {commLegs.length > 1 && (
+                            <button
+                              type="button"
+                              onClick={() => handleRemoveCommLeg(idx)}
+                              className="p-2.5 text-red-400 hover:text-red-300 hover:bg-red-500/10 rounded-lg"
+                              title="Remove Leg"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+
+                    <div className="flex justify-between items-center pt-2">
+                      <button
+                        type="button"
+                        onClick={handleAddCommLeg}
+                        className="text-xs font-bold text-text-secondary hover:text-text-primary flex items-center gap-1.5 px-3 py-2 rounded-lg bg-slate-main border border-slate-700"
+                      >
+                        <Plus className="w-4 h-4 text-oxblood" /> Add Commercial Flight Leg
+                      </button>
+
+                      <button type="submit" className="bg-oxblood hover:bg-oxblood-bright text-text-primary font-bold rounded-xl px-6 py-3 flex justify-center items-center gap-2 transition-all shadow-lg text-sm">
+                        <Search className="w-4 h-4" />
+                        Search Multileg Flights
+                      </button>
+                    </div>
+                  </div>
+                )}
               </form>
             )}
 
@@ -383,6 +560,51 @@ export default function Home() {
                 </div>
               </form>
             )}
+          </div>
+        </div>
+      </section>
+
+      {/* WhatsApp Payment Flow Highlights */}
+      <section className="py-16 bg-gradient-to-r from-slate-dark via-slate-900 to-emerald-950/40 border-t border-border-slate px-4 sm:px-6 lg:px-8">
+        <div className="max-w-7xl mx-auto text-center">
+          <span className="text-xs font-extrabold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 border border-emerald-500/30 px-3 py-1 rounded-full inline-block mb-3">
+            Seamless Booking & Payments
+          </span>
+          <h2 className="text-3xl font-extrabold text-white mb-4">Official WhatsApp Payment Flow</h2>
+          <p className="text-sm text-slate-300 max-w-2xl mx-auto mb-12">
+            Experience our 5-step VIP booking process for both commercial tickets and executive private jet charters.
+          </p>
+
+          <div className="grid grid-cols-1 md:grid-cols-5 gap-6 text-left">
+            <div className="bg-slate-dark border border-slate-800 p-6 rounded-2xl shadow-xl relative hover:border-emerald-500/50 transition-all">
+              <span className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-extrabold flex items-center justify-center text-sm mb-4">1</span>
+              <h3 className="text-base font-bold text-white mb-2">Book via WhatsApp</h3>
+              <p className="text-xs text-slate-400">Click the "Book via WhatsApp" button on any charter or commercial flight option.</p>
+            </div>
+
+            <div className="bg-slate-dark border border-slate-800 p-6 rounded-2xl shadow-xl relative hover:border-emerald-500/50 transition-all">
+              <span className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-extrabold flex items-center justify-center text-sm mb-4">2</span>
+              <h3 className="text-base font-bold text-white mb-2">Auto-Populate Details</h3>
+              <p className="text-xs text-slate-400">Your chat template auto-populates with origin, destination, date, time, passenger count & aircraft.</p>
+            </div>
+
+            <div className="bg-slate-dark border border-slate-800 p-6 rounded-2xl shadow-xl relative hover:border-emerald-500/50 transition-all">
+              <span className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-extrabold flex items-center justify-center text-sm mb-4">3</span>
+              <h3 className="text-base font-bold text-white mb-2">Send Passport Copies</h3>
+              <p className="text-xs text-slate-400">Send passenger passport copies directly in WhatsApp chat to verify identity & manifest.</p>
+            </div>
+
+            <div className="bg-slate-dark border border-slate-800 p-6 rounded-2xl shadow-xl relative hover:border-emerald-500/50 transition-all">
+              <span className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-extrabold flex items-center justify-center text-sm mb-4">4</span>
+              <h3 className="text-base font-bold text-white mb-2">Receive Bank Details</h3>
+              <p className="text-xs text-slate-400">Support agent immediately responds with secure bank transfer account details.</p>
+            </div>
+
+            <div className="bg-slate-dark border border-slate-800 p-6 rounded-2xl shadow-xl relative hover:border-emerald-500/50 transition-all">
+              <span className="w-8 h-8 rounded-lg bg-emerald-500/20 text-emerald-400 font-extrabold flex items-center justify-center text-sm mb-4">5</span>
+              <h3 className="text-base font-bold text-white mb-2">Payment Confirmation</h3>
+              <p className="text-xs text-slate-400">Send payment confirmation screenshot to finalize booking and receive instant e-ticket.</p>
+            </div>
           </div>
         </div>
       </section>
@@ -575,7 +797,7 @@ export default function Home() {
                   <span className="text-2xl font-bold text-text-primary">
                     $499
                   </span>
-                  <Link href="/search?origin=LHR&destination=JFK&date=2026-07-20" className="bg-oxblood hover:bg-oxblood-bright text-text-primary px-4 py-2 rounded-lg font-medium transition-colors">
+                  <Link href={`/search?tripType=one-way&origin=LHR&destination=JFK&date=${new Date(Date.now() + 14 * 86400000).toISOString().substring(0, 10)}`} className="bg-oxblood hover:bg-oxblood-bright text-text-primary px-4 py-2 rounded-lg font-medium transition-colors">
                     Select
                   </Link>
                 </div>

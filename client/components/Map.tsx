@@ -7,6 +7,7 @@ interface MapProps {
     latitude?: number;
     longitude?: number;
     currentLocation?: string;
+    locationName?: string;
     flightNumber?: string;
     origin?: string;
     destination?: string;
@@ -19,7 +20,8 @@ interface MapProps {
 export default function Map({
     latitude = 51.5074,
     longitude = -0.1278,
-    currentLocation = "In Transit",
+    currentLocation,
+    locationName,
     flightNumber = "PJ-808",
     origin = "LHR",
     destination = "JFK",
@@ -28,8 +30,10 @@ export default function Map({
     aircraft = "Gulfstream G650ER",
     onRefresh,
 }: MapProps) {
+    const displayLocation = locationName || currentLocation || "In Transit";
     const latNum = Number(latitude) || 51.5074;
     const lngNum = Number(longitude) || -0.1278;
+
 
     // Construct iframe embed URL using OpenStreetMap centered on lat/lng
     const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lngNum - 0.25}%2C${latNum - 0.25}%2C${lngNum + 0.25}%2C${latNum + 0.25}&layer=mapnik&marker=${latNum}%2C${lngNum}`;
@@ -113,7 +117,7 @@ export default function Map({
                         <MapPin className="w-4 h-4 text-red-500 flex-shrink-0" />
                         <div className="truncate">
                             <span className="text-[10px] text-slate-400 block font-mono">LAST REPORTED LOCATION</span>
-                            <span className="font-medium text-slate-200">{currentLocation}</span>
+                            <span className="font-medium text-slate-200">{displayLocation}</span>
                         </div>
                     </div>
                 </div>
