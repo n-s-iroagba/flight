@@ -1,15 +1,30 @@
 'use client';
 
-import { useQuery } from '@tanstack/react-query';
-import { getAdminFlights } from '../../../lib/api';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { getAdminFlights, deleteAdminFlight } from '../../../lib/api';
 import { Plus, Filter, Edit, Trash2 } from 'lucide-react';
 import Link from 'next/link';
 
 export default function AdminFlights() {
+  const queryClient = useQueryClient();
+
   const { data, isLoading } = useQuery({
     queryKey: ['admin-flights'],
     queryFn: () => getAdminFlights()
   });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id: string) => deleteAdminFlight(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['admin-flights'] });
+    }
+  });
+
+  const handleDelete = (id: string) => {
+    if (confirm('Are you sure you want to delete this flight record?')) {
+      deleteMutation.mutate(id);
+    }
+  };
 
   const flights = data?.flights || [];
 
@@ -17,7 +32,7 @@ export default function AdminFlights() {
     <div>
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3 mb-8">
         <h1 className="text-xl sm:text-2xl font-bold text-text-primary flex items-center gap-2">
-          ✈️ Manage Flights
+          ✈️ Manage Commercial Flights
         </h1>
         <Link 
           href="/admin/flights/create"
@@ -58,6 +73,7 @@ export default function AdminFlights() {
               <tr className="bg-slate-dark border-b border-border-slate">
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase">Flight</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase">Route</th>
+                <th className="p-4 text-xs font-semibold text-text-secondary uppercase">Stops</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase">Schedule</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase">Price</th>
                 <th className="p-4 text-xs font-semibold text-text-secondary uppercase">Status/Seats</th>
@@ -67,22 +83,33 @@ export default function AdminFlights() {
             <tbody className="divide-y divide-border-slate">
               {isLoading ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-text-secondary">Loading flights...</td>
+                  <td colSpan={7} className="p-8 text-center text-text-secondary">Loading flights...</td>
                 </tr>
               ) : flights.length === 0 ? (
                 <tr>
-                  <td colSpan={6} className="p-8 text-center text-text-secondary">No flights found. Create one above.</td>
+                  <td colSpan={7} className="p-8 text-center text-text-secondary">No flights found. Create one above.</td>
                 </tr>
               ) : flights.map((flight: any) => (
                 <tr key={flight.id} className="hover:bg-slate-dark/50 transition-colors">
                   <td className="p-4">
                     <div className="font-medium text-text-primary flex items-center gap-2">
-                      ✈️ {flight.flightNumber || 'AA-123'}
+                      ✈️ {flight.flight_number || flight.flightNumber || 'AA-123'}
                     </div>
                     <div className="text-xs text-text-secondary">{flight.airline}</div>
                   </td>
                   <td className="p-4 font-medium text-text-primary">
                     {flight.origin} → {flight.destination}
+                  </td>
+                  <td className="p-4">
+                    {(flight.stops ?? 0) === 0 ? (
+                      <span className="bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 text-xs px-2 py-0.5 rounded font-medium">
+                        Direct
+                      </span>
+                    ) : (
+                      <span className="bg-amber-500/10 text-amber-400 border border-amber-500/30 text-xs px-2 py-0.5 rounded font-medium">
+                        {flight.stops} Stop(s)
+                      </span>
+                    )}
                   </td>
                   <td className="p-4 text-sm text-text-secondary">
                     {new Date(flight.departure_time || flight.departureTime).toLocaleString()}
@@ -97,14 +124,18 @@ export default function AdminFlights() {
                       ) : (
                         <span className="inline-block bg-amber-warning/10 text-amber-warning text-xs px-2 py-1 rounded w-fit">⚠️ {flight.status}</span>
                       )}
-                      <span className="text-xs text-text-secondary">{flight.availableSeats || flight.available_seats}/{flight.totalSeats || flight.total_seats} Seats</span>
+                      <span className="text-xs text-text-secondary">{flight.available_seats ?? flight.availableSeats ?? 0}/{flight.total_seats ?? flight.totalSeats ?? 0} Seats</span>
                     </div>
                   </td>
                   <td className="p-4 text-right space-x-2">
                     <Link href={`/admin/flights/${flight.id}/edit`} className="inline-flex items-center justify-center p-2 rounded bg-slate-dark border border-border-slate text-text-secondary hover:text-text-primary hover:border-text-secondary transition-colors">
                       <Edit className="w-4 h-4" />
                     </Link>
-                    <button className="inline-flex items-center justify-center p-2 rounded bg-slate-dark border border-border-slate text-red-error hover:bg-red-error/10 transition-colors">
+                    <button 
+                      onClick={() => handleDelete(flight.id)}
+                      disabled={deleteMutation.isPending}
+                      className="inline-flex items-center justify-center p-2 rounded bg-slate-dark border border-border-slate text-red-error hover:bg-red-error/10 transition-colors disabled:opacity-50"
+                    >
                       <Trash2 className="w-4 h-4" />
                     </button>
                   </td>

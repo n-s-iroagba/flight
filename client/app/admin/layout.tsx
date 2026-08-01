@@ -2,7 +2,7 @@
 
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
-import { LogOut, LayoutDashboard, Plane, CreditCard, FileText, Lock } from 'lucide-react';
+import { LogOut, LayoutDashboard, Plane, CreditCard, Lock, Mail, Crown } from 'lucide-react';
 import { useEffect, useState } from 'react';
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
@@ -33,9 +33,11 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
   const navItems = [
     { name: 'Overview', href: '/admin', icon: LayoutDashboard },
     { name: 'Flights', href: '/admin/flights', icon: Plane },
+    { name: 'Private Jets', href: '/admin/private-jets', icon: Crown },
     { name: 'Payments', href: '/admin/payments', icon: CreditCard },
-    { name: 'Reports', href: '/admin/reports', icon: FileText },
+    { name: 'Mail Dispatch', href: '/admin/mail', icon: Mail },
   ];
+
 
   return (
     <div className="min-h-screen bg-slate-dark">

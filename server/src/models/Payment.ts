@@ -8,7 +8,7 @@ export interface PaymentAttributes {
   currency: string;
   method: 'cash' | 'bank_transfer' | 'mobile_money' | 'whatsapp';
   reference?: string;
-  status: 'pending' | 'completed' | 'failed';
+  status: 'pending' | 'paid' | 'failed' | 'completed';
   confirmed_by?: string;
   confirmed_at?: Date;
   notes?: string;
@@ -24,7 +24,7 @@ export class Payment extends Model<PaymentAttributes, PaymentCreationAttributes>
   public currency!: string;
   public method!: 'cash' | 'bank_transfer' | 'mobile_money' | 'whatsapp';
   public reference?: string;
-  public status!: 'pending' | 'completed' | 'failed';
+  public status!: 'pending' | 'paid' | 'failed' | 'completed';
   public confirmed_by?: string;
   public confirmed_at?: Date;
   public notes?: string;
@@ -43,7 +43,7 @@ Payment.init({
   currency: { type: DataTypes.STRING(3), defaultValue: 'USD' },
   method: { type: DataTypes.ENUM('cash', 'bank_transfer', 'mobile_money', 'whatsapp'), allowNull: false },
   reference: { type: DataTypes.STRING(100) },
-  status: { type: DataTypes.ENUM('pending', 'completed', 'failed'), defaultValue: 'pending' },
+  status: { type: DataTypes.ENUM('pending', 'paid', 'failed', 'completed'), defaultValue: 'pending' },
   confirmed_by: { type: DataTypes.STRING(100) },
   confirmed_at: { type: DataTypes.DATE },
   notes: { type: DataTypes.TEXT },

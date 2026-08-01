@@ -7,7 +7,7 @@ import { adminLogin } from '../../../lib/api';
 
 export default function AdminLogin() {
   const router = useRouter();
-  const [email, setEmail] = useState('');
+  const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -18,7 +18,7 @@ export default function AdminLogin() {
     setIsLoading(true);
 
     try {
-      const response = await adminLogin({ email, password });
+      const response = await adminLogin({ username, password });
       if (response.success && response.data?.token) {
         localStorage.setItem('adminToken', response.data.token);
         router.push('/admin');
@@ -50,14 +50,14 @@ export default function AdminLogin() {
         <form className="mt-8 space-y-6" onSubmit={handleSubmit}>
           <div className="space-y-4">
             <div>
-              <label className="block text-sm font-medium text-text-secondary mb-1">Email address</label>
+              <label className="block text-sm font-medium text-text-secondary mb-1">Username</label>
               <input
-                name="email"
-                type="email"
+                name="username"
+                type="text"
                 required
                 className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:outline-none focus:border-oxblood"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
               />
             </div>
             <div>

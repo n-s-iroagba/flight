@@ -1,53 +1,104 @@
 'use client';
 
-import { useState, use } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter } from 'next/navigation';
+import { getFlightDetails, updateAdminFlight } from '../../../../../lib/api';
 import Link from 'next/link';
 
 export default function EditFlight({ params }: { params: Promise<{ id: string }> }) {
   const resolvedParams = use(params);
   const id = resolvedParams.id;
   const router = useRouter();
+
+  const [isLoading, setIsLoading] = useState(true);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  
-  // Just stubbing form state for edit view layout mapping
   const [formData, setFormData] = useState({
-    origin: 'LHR',
-    destination: 'JFK',
-    departureTime: '2026-07-20T08:30',
-    arrivalTime: '2026-07-20T11:45',
-    airline: 'British Airways',
-    airlineCode: 'BA',
-    flightNumber: 'BA-123',
-    price: 499,
+    origin: '',
+    destination: '',
+    departureTime: '',
+    arrivalTime: '',
+    airline: '',
+    airlineCode: '',
+    flightNumber: '',
+    price: 0,
     currency: 'USD',
     totalSeats: 50,
     cabinClass: 'economy',
-    status: 'active'
+    status: 'active',
+    stops: 0,
+    current_latitude: '',
+    current_longitude: '',
+    current_location: ''
   });
+
+  useEffect(() => {
+    async function loadFlight() {
+      try {
+        const flight = await getFlightDetails(id);
+        if (flight) {
+          setFormData({
+            origin: flight.origin || '',
+            destination: flight.destination || '',
+            departureTime: flight.departure_time ? new Date(flight.departure_time).toISOString().slice(0, 16) : '',
+            arrivalTime: flight.arrival_time ? new Date(flight.arrival_time).toISOString().slice(0, 16) : '',
+            airline: flight.airline || '',
+            airlineCode: flight.airline_code || flight.airlineCode || '',
+            flightNumber: flight.flight_number || flight.flightNumber || '',
+            price: Number(flight.price) || 0,
+            currency: flight.currency || 'USD',
+            totalSeats: flight.total_seats || flight.totalSeats || 50,
+            cabinClass: flight.cabin_class || flight.cabinClass || 'economy',
+            status: flight.status || 'active',
+            stops: flight.stops ?? 0,
+            current_latitude: flight.current_latitude ?? '',
+            current_longitude: flight.current_longitude ?? '',
+            current_location: flight.current_location ?? ''
+          });
+        }
+      } catch (err) {
+        console.error('Error loading flight for edit:', err);
+      } finally {
+        setIsLoading(false);
+      }
+    }
+    loadFlight();
+  }, [id]);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' || name === 'totalSeats' ? Number(value) : value
+      [name]: name === 'price' || name === 'totalSeats' || name === 'stops' || name === 'current_latitude' || name === 'current_longitude' ? (value === '' ? '' : Number(value)) : value
     }));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
-    // Submit update to API...
-    setTimeout(() => {
+    try {
+      await updateAdminFlight(id, formData);
       router.push('/admin/flights');
-    }, 500);
+    } catch (err) {
+      alert('Failed to update flight');
+      console.error(err);
+    } finally {
+      setIsSubmitting(false);
+    }
   };
+
+  if (isLoading) {
+    return (
+      <div className="max-w-4xl mx-auto py-12 text-center text-text-secondary">
+        Loading flight details...
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto">
       <div className="flex justify-between items-center mb-8">
         <h1 className="text-2xl font-bold text-text-primary flex items-center gap-2">
-          ✈️ Edit Flight
+          ✈️ Edit Commercial Flight
         </h1>
       </div>
 
@@ -108,7 +159,7 @@ export default function EditFlight({ params }: { params: Promise<{ id: string }>
 
         <div className="p-6 border-b border-border-slate">
           <h2 className="text-lg font-bold text-text-primary mb-4">Pricing & Availability</h2>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div>
               <label className="block text-sm text-text-secondary mb-1">Price *</label>
               <input type="number" name="price" value={formData.price} onChange={handleChange} min={0} required className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
@@ -124,6 +175,28 @@ export default function EditFlight({ params }: { params: Promise<{ id: string }>
             <div>
               <label className="block text-sm text-text-secondary mb-1">Total Seats *</label>
               <input type="number" name="totalSeats" value={formData.totalSeats} onChange={handleChange} min={1} required className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Stops (0 = Direct)</label>
+              <input type="number" name="stops" value={formData.stops} onChange={handleChange} min={0} className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 border-b border-border-slate">
+          <h2 className="text-lg font-bold text-text-primary mb-4">Live Tracking (Telemetry)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Current Latitude</label>
+              <input type="number" step="any" name="current_latitude" value={formData.current_latitude} onChange={handleChange} className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Current Longitude</label>
+              <input type="number" step="any" name="current_longitude" value={formData.current_longitude} onChange={handleChange} className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Current Location (Text)</label>
+              <input type="text" name="current_location" value={formData.current_location} onChange={handleChange} placeholder="e.g. Over Atlantic Ocean" className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
             </div>
           </div>
         </div>

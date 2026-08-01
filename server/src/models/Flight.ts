@@ -19,11 +19,16 @@ export interface FlightAttributes {
   cancellation_policy?: string;
   cabin_class: 'economy' | 'premium_economy' | 'business' | 'first';
   status: 'active' | 'inactive' | 'sold_out';
+  is_private_jet?: boolean;
+  stops?: number;
+  current_latitude?: number;
+  current_longitude?: number;
+  current_location?: string;
   created_at?: Date;
   updated_at?: Date;
 }
 
-interface FlightCreationAttributes extends Optional<FlightAttributes, 'id' | 'currency' | 'status' | 'created_at' | 'updated_at'> {}
+interface FlightCreationAttributes extends Optional<FlightAttributes, 'id' | 'currency' | 'status' | 'is_private_jet' | 'stops' | 'current_latitude' | 'current_longitude' | 'current_location' | 'created_at' | 'updated_at'> {}
 
 export class Flight extends Model<FlightAttributes, FlightCreationAttributes> implements FlightAttributes {
   public id!: string;
@@ -43,6 +48,11 @@ export class Flight extends Model<FlightAttributes, FlightCreationAttributes> im
   public cancellation_policy?: string;
   public cabin_class!: 'economy' | 'premium_economy' | 'business' | 'first';
   public status!: 'active' | 'inactive' | 'sold_out';
+  public is_private_jet?: boolean;
+  public stops?: number;
+  public current_latitude?: number;
+  public current_longitude?: number;
+  public current_location?: string;
   
   public readonly created_at!: Date;
   public readonly updated_at!: Date;
@@ -76,6 +86,26 @@ Flight.init({
     type: DataTypes.ENUM('active', 'inactive', 'sold_out'),
     defaultValue: 'active'
   },
+  is_private_jet: {
+    type: DataTypes.BOOLEAN,
+    defaultValue: false
+  },
+  stops: {
+    type: DataTypes.INTEGER,
+    defaultValue: 0
+  },
+  current_latitude: {
+    type: DataTypes.DECIMAL(10, 6),
+    allowNull: true
+  },
+  current_longitude: {
+    type: DataTypes.DECIMAL(10, 6),
+    allowNull: true
+  },
+  current_location: {
+    type: DataTypes.STRING(255),
+    allowNull: true
+  }
 }, {
   sequelize,
   tableName: 'flights',
