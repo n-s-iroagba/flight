@@ -144,7 +144,7 @@ export default function BookPageContent({ id }: { id: string }) {
                     name="email"
                     value={formData.email}
                     onChange={handleChange}
-                    placeholder="daniel@example.com"
+                    placeholder="passenger@swiftwings.online"
                     className="w-full bg-slate-main border border-border-slate rounded-xl p-3 text-text-primary focus:outline-none focus:border-oxblood"
                     required
                   />

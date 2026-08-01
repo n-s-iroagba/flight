@@ -8,7 +8,7 @@ import { Radar, Search, AlertCircle, CheckCircle2, Plane, MapPin } from 'lucide-
 
 function TrackContent() {
   const searchParams = useSearchParams();
-  const initialTicket = searchParams.get('ticket') || '';
+  const initialTicket = searchParams.get('flight') || '';
 
   const [ticketNumber, setTicketNumber] = useState(initialTicket);
   const [loading, setLoading] = useState(false);
@@ -23,10 +23,10 @@ function TrackContent() {
     setError('');
     try {
       const data = await trackFlightByTicket(ticketNumber.trim());
-      setFlightData(data);
+      setFlightData(data.flight);
     } catch (err: any) {
       setFlightData(null);
-      setError(err.response?.data?.message || err.message || 'Ticket or Booking Reference not found. Please check and try again.');
+      setError(err.response?.data?.message || err.message || 'Flight Number not found. Please check and try again.');
     } finally {
       setLoading(false);
     }
@@ -47,7 +47,7 @@ function TrackContent() {
         </div>
         <h1 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">Flight Location Tracker</h1>
         <p className="text-slate-400 text-sm mt-2">
-          Enter your Ticket Number, Booking PNR, or Flight Number to view live radar position and flight telemetry.
+          Enter your Flight Number to view live radar position and flight telemetry.
         </p>
       </div>
 
@@ -58,7 +58,7 @@ function TrackContent() {
             <Search className="w-5 h-5 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2" />
             <input
               type="text"
-              placeholder="e.g. SWIFT-84920, PNR-932A, or PJ-808"
+              placeholder="e.g. SW-JET-901, PJ-808"
               value={ticketNumber}
               onChange={(e) => setTicketNumber(e.target.value)}
               className="w-full bg-slate-main border border-slate-700 rounded-xl pl-11 pr-4 py-3 text-white focus:outline-none focus:border-emerald-500 font-mono text-sm uppercase"
@@ -88,20 +88,20 @@ function TrackContent() {
           {/* Status Bar Header */}
           <div className="bg-slate-dark border border-slate-800 rounded-2xl p-6 shadow-xl flex flex-wrap items-center justify-between gap-4">
             <div className="flex items-center gap-4">
-              <div className={`p-3 rounded-xl ${flightData.is_private_jet ? 'bg-amber-100/20 text-text-secondary border border-amber-100/30' : 'bg-oxblood/20 text-oxblood-bright border border-oxblood/30'}`}>
+              <div className={`p-3 rounded-xl ${flightData.isPrivateJet ? 'bg-amber-100/20 text-text-secondary border border-amber-100/30' : 'bg-oxblood/20 text-oxblood-bright border border-oxblood/30'}`}>
                 <Plane className="w-7 h-7" />
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h2 className="text-2xl font-bold text-white">{flightData.flight_number}</h2>
-                  {flightData.is_private_jet && (
+                  <h2 className="text-2xl font-bold text-white">{flightData.flightNumber}</h2>
+                  {flightData.isPrivateJet && (
                     <span className="px-2.5 py-0.5 text-xs font-semibold bg-amber-100/20 text-text-primary border border-amber-100/40 rounded-full">
                       PRIVATE JET
                     </span>
                   )}
                 </div>
                 <p className="text-xs text-slate-400 font-mono mt-0.5">
-                  {flightData.airline} ({flightData.airline_code}) • {flightData.aircraft}
+                  {flightData.airline} ({flightData.airlineCode}) • {flightData.aircraft}
                 </p>
               </div>
             </div>
@@ -118,14 +118,14 @@ function TrackContent() {
 
           {/* Map Component Edits Display */}
           <Map
-            latitude={flightData.current_latitude ? Number(flightData.current_latitude) : 51.5074}
-            longitude={flightData.current_longitude ? Number(flightData.current_longitude) : -0.1278}
-            currentLocation={flightData.current_location || `${flightData.origin} → ${flightData.destination}`}
-            flightNumber={flightData.flight_number}
+            latitude={flightData.latitude}
+            longitude={flightData.longitude}
+            currentLocation={flightData.currentLocation || `${flightData.origin} → ${flightData.destination}`}
+            flightNumber={flightData.flightNumber}
             origin={flightData.origin}
             destination={flightData.destination}
             status={flightData.status}
-            isPrivateJet={flightData.is_private_jet}
+            isPrivateJet={flightData.isPrivateJet}
             aircraft={flightData.aircraft}
             onRefresh={handleTrack}
           />

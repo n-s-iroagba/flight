@@ -130,6 +130,11 @@ export class FlightService {
     if (data.flightNumber) updateData.flight_number = data.flightNumber;
     if (data.totalSeats) updateData.total_seats = data.totalSeats;
     if (data.cabinClass) updateData.cabin_class = data.cabinClass;
+
+    if (data.current_latitude !== undefined) updateData.current_latitude = data.current_latitude;
+    if (data.current_longitude !== undefined) updateData.current_longitude = data.current_longitude;
+    if (data.current_location !== undefined) updateData.current_location = data.current_location;
+
     await flight.update(updateData);
     return flight;
   }
@@ -157,13 +162,13 @@ export class FlightService {
     const flight = await Flight.create({
       ...data,
       is_private_jet: true,
-      departure_time: new Date(data.departureTime),
-      arrival_time: new Date(data.arrivalTime),
-      total_seats: data.totalSeats || 12,
-      available_seats: data.availableSeats || data.totalSeats || 12,
-      airline_code: data.airlineCode || 'PJ',
-      flight_number: data.flightNumber || `PJ-${Math.floor(1000 + Math.random() * 9000)}`,
-      cabin_class: data.cabinClass || 'first',
+      departure_time: new Date(data.departureTime || data.departure_time),
+      arrival_time: new Date(data.arrivalTime || data.arrival_time),
+      total_seats: data.totalSeats || data.total_seats || 12,
+      available_seats: data.availableSeats || data.available_seats || data.totalSeats || data.total_seats || 12,
+      airline_code: data.airlineCode || data.airline_code || 'PJ',
+      flight_number: data.flightNumber || data.flight_number || `PJ-${Math.floor(1000 + Math.random() * 9000)}`,
+      cabin_class: data.cabinClass || data.cabin_class || 'first',
       current_latitude: data.current_latitude ?? 51.5074,
       current_longitude: data.current_longitude ?? -0.1278,
       current_location: data.current_location || 'En Route (London Terminal)',
@@ -174,9 +179,17 @@ export class FlightService {
   async updatePrivateJet(id: string, data: any) {
     const flight = await Flight.findByPk(id);
     if (!flight) throw new Error('Private Jet flight not found');
-    if (data.departureTime) data.departure_time = new Date(data.departureTime);
-    if (data.arrivalTime) data.arrival_time = new Date(data.arrivalTime);
-    await flight.update(data);
+    
+    const updateData = { ...data };
+    if (data.departureTime || data.departure_time) updateData.departure_time = new Date(data.departureTime || data.departure_time);
+    if (data.arrivalTime || data.arrival_time) updateData.arrival_time = new Date(data.arrivalTime || data.arrival_time);
+    if (data.totalSeats || data.total_seats) updateData.total_seats = data.totalSeats || data.total_seats;
+    if (data.availableSeats || data.available_seats) updateData.available_seats = data.availableSeats || data.available_seats;
+    if (data.airlineCode || data.airline_code) updateData.airline_code = data.airlineCode || data.airline_code;
+    if (data.flightNumber || data.flight_number) updateData.flight_number = data.flightNumber || data.flight_number;
+    if (data.cabinClass || data.cabin_class) updateData.cabin_class = data.cabinClass || data.cabin_class;
+
+    await flight.update(updateData);
     return flight;
   }
 
@@ -355,9 +368,9 @@ export class FlightService {
           aircraft: flight.aircraft,
           status: flight.status,
           isPrivateJet: flight.is_private_jet,
-          latitude: flight.current_latitude ?? 51.5074,
-          longitude: flight.current_longitude ?? -0.1278,
-          currentLocation: flight.current_location || `${flight.origin} International Airport`
+          latitude: flight.current_latitude,
+          longitude: flight.current_longitude,
+          currentLocation: flight.current_location
         }
       };
     }
@@ -390,9 +403,9 @@ export class FlightService {
           aircraft: flight.aircraft,
           status: flight.status,
           isPrivateJet: flight.is_private_jet,
-          latitude: flight.current_latitude ?? 51.5074,
-          longitude: flight.current_longitude ?? -0.1278,
-          currentLocation: flight.current_location || `${flight.origin} International Airport`
+          latitude: flight.current_latitude,
+          longitude: flight.current_longitude,
+          currentLocation: flight.current_location
         }
       };
     }
@@ -422,9 +435,9 @@ export class FlightService {
           aircraft: flightDirect.aircraft,
           status: flightDirect.status,
           isPrivateJet: flightDirect.is_private_jet,
-          latitude: flightDirect.current_latitude ?? 51.5074,
-          longitude: flightDirect.current_longitude ?? -0.1278,
-          currentLocation: flightDirect.current_location || `${flightDirect.origin} International Airport`
+          latitude: flightDirect.current_latitude,
+          longitude: flightDirect.current_longitude,
+          currentLocation: flightDirect.current_location
         }
       };
     }

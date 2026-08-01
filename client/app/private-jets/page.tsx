@@ -219,7 +219,7 @@ export default function PrivateJetsPage() {
                 <label className="text-xs text-slate-400 mb-1 block">Email Address</label>
                 <input
                   type="email"
-                  placeholder="vip@swiftwings.com"
+                  placeholder="booking@swiftwings.online"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   className="w-full bg-slate-main border border-slate-800 rounded-xl p-3 text-white text-sm"

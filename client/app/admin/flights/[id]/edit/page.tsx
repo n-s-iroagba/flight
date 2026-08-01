@@ -25,7 +25,10 @@ export default function EditFlight({ params }: { params: Promise<{ id: string }>
     totalSeats: 50,
     cabinClass: 'economy',
     status: 'active',
-    stops: 0
+    stops: 0,
+    current_latitude: '',
+    current_longitude: '',
+    current_location: ''
   });
 
   useEffect(() => {
@@ -46,7 +49,10 @@ export default function EditFlight({ params }: { params: Promise<{ id: string }>
             totalSeats: flight.total_seats || flight.totalSeats || 50,
             cabinClass: flight.cabin_class || flight.cabinClass || 'economy',
             status: flight.status || 'active',
-            stops: flight.stops ?? 0
+            stops: flight.stops ?? 0,
+            current_latitude: flight.current_latitude ?? '',
+            current_longitude: flight.current_longitude ?? '',
+            current_location: flight.current_location ?? ''
           });
         }
       } catch (err) {
@@ -62,7 +68,7 @@ export default function EditFlight({ params }: { params: Promise<{ id: string }>
     const { name, value } = e.target;
     setFormData(prev => ({
       ...prev,
-      [name]: name === 'price' || name === 'totalSeats' || name === 'stops' ? Number(value) : value
+      [name]: name === 'price' || name === 'totalSeats' || name === 'stops' || name === 'current_latitude' || name === 'current_longitude' ? (value === '' ? '' : Number(value)) : value
     }));
   };
 
@@ -173,6 +179,24 @@ export default function EditFlight({ params }: { params: Promise<{ id: string }>
             <div>
               <label className="block text-sm text-text-secondary mb-1">Stops (0 = Direct)</label>
               <input type="number" name="stops" value={formData.stops} onChange={handleChange} min={0} className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
+            </div>
+          </div>
+        </div>
+
+        <div className="p-6 border-b border-border-slate">
+          <h2 className="text-lg font-bold text-text-primary mb-4">Live Tracking (Telemetry)</h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Current Latitude</label>
+              <input type="number" step="any" name="current_latitude" value={formData.current_latitude} onChange={handleChange} className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Current Longitude</label>
+              <input type="number" step="any" name="current_longitude" value={formData.current_longitude} onChange={handleChange} className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
+            </div>
+            <div>
+              <label className="block text-sm text-text-secondary mb-1">Current Location (Text)</label>
+              <input type="text" name="current_location" value={formData.current_location} onChange={handleChange} placeholder="e.g. Over Atlantic Ocean" className="w-full bg-slate-dark border border-border-slate rounded-lg p-3 text-text-primary focus:border-oxblood" />
             </div>
           </div>
         </div>

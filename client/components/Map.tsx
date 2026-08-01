@@ -31,9 +31,9 @@ export default function Map({
     onRefresh,
 }: MapProps) {
     const displayLocation = locationName || currentLocation || "In Transit";
-    const latNum = Number(latitude) || 51.5074;
-    const lngNum = Number(longitude) || -0.1278;
-
+    const hasLocation = latitude !== undefined && latitude !== null && longitude !== undefined && longitude !== null && latitude !== '' && longitude !== '';
+    const latNum = hasLocation ? Number(latitude) : 0;
+    const lngNum = hasLocation ? Number(longitude) : 0;
 
     // Construct iframe embed URL using OpenStreetMap centered on lat/lng
     const osmUrl = `https://www.openstreetmap.org/export/embed.html?bbox=${lngNum - 0.25}%2C${latNum - 0.25}%2C${lngNum + 0.25}%2C${latNum + 0.25}&layer=mapnik&marker=${latNum}%2C${lngNum}`;
@@ -83,70 +83,80 @@ export default function Map({
             </div>
 
             {/* Map Display & Telemetry Overlay Container */}
-            <div className="relative h-[380px] sm:h-[460px] w-full bg-slate-950 overflow-hidden">
-                {/* OpenStreetMap Embed */}
-                <iframe
-                    title={`Live Map Telemetry for ${flightNumber}`}
-                    className="w-full h-full filter contrast-125 saturate-110 brightness-90"
-                    src={osmUrl}
-                    loading="lazy"
-                    style={{ border: 0 }}
-                />
-
-                {/* Telemetry Floating Glass HUD Overlay */}
-                <div className="absolute top-4 left-4 right-4 sm:right-auto bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-700/80 shadow-2xl max-w-sm">
-                    <div className="flex items-center justify-between mb-2">
-                        <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-                            <Radio className="w-3.5 h-3.5 text-red-500 animate-pulse" /> Telemetry Coordinates
-                        </span>
-                        <span className="text-[10px] font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">GPS SYNC</span>
+            <div className="relative h-[380px] sm:h-[460px] w-full bg-slate-950 overflow-hidden flex flex-col items-center justify-center">
+                {!hasLocation ? (
+                    <div className="text-center p-6 z-10">
+                        <Plane className="w-12 h-12 mx-auto mb-4 text-slate-600 opacity-50" />
+                        <h3 className="text-xl font-bold text-slate-300 mb-2">Awaiting Telemetry</h3>
+                        <p className="text-slate-500 text-sm">The flight is yet to take off.</p>
                     </div>
+                ) : (
+                    <>
+                        {/* OpenStreetMap Embed */}
+                        <iframe
+                            title={`Live Map Telemetry for ${flightNumber}`}
+                            className="absolute inset-0 w-full h-full filter contrast-125 saturate-110 brightness-90"
+                            src={osmUrl}
+                            loading="lazy"
+                            style={{ border: 0 }}
+                        />
 
-                    <div className="grid grid-cols-2 gap-3 text-xs my-2">
-                        <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
-                            <span className="text-[10px] text-slate-400 block font-mono">LATITUDE</span>
-                            <span className="font-mono font-bold text-text-secondary text-sm">{latNum.toFixed(6)}° N</span>
-                        </div>
-                        <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
-                            <span className="text-[10px] text-slate-400 block font-mono">LONGITUDE</span>
-                            <span className="font-mono font-bold text-text-secondary text-sm">{lngNum.toFixed(6)}° E</span>
-                        </div>
-                    </div>
+                        {/* Telemetry Floating Glass HUD Overlay */}
+                        <div className="absolute top-4 left-4 right-4 sm:right-auto bg-slate-900/90 backdrop-blur-md p-4 rounded-xl border border-slate-700/80 shadow-2xl max-w-sm">
+                            <div className="flex items-center justify-between mb-2">
+                                <span className="text-xs font-semibold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                                    <Radio className="w-3.5 h-3.5 text-red-500 animate-pulse" /> Telemetry Coordinates
+                                </span>
+                                <span className="text-[10px] font-mono bg-slate-800 text-slate-300 px-2 py-0.5 rounded">GPS SYNC</span>
+                            </div>
 
-                    <div className="mt-3 pt-3 border-t border-slate-800 flex items-center gap-2 text-xs">
-                        <MapPin className="w-4 h-4 text-red-500 flex-shrink-0" />
-                        <div className="truncate">
-                            <span className="text-[10px] text-slate-400 block font-mono">LAST REPORTED LOCATION</span>
-                            <span className="font-medium text-slate-200">{displayLocation}</span>
-                        </div>
-                    </div>
-                </div>
+                            <div className="grid grid-cols-2 gap-3 text-xs my-2">
+                                <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block font-mono">LATITUDE</span>
+                                    <span className="font-mono font-bold text-text-secondary text-sm">{latNum.toFixed(6)}° N</span>
+                                </div>
+                                <div className="bg-slate-950/80 p-2.5 rounded-lg border border-slate-800">
+                                    <span className="text-[10px] text-slate-400 block font-mono">LONGITUDE</span>
+                                    <span className="font-mono font-bold text-text-secondary text-sm">{lngNum.toFixed(6)}° E</span>
+                                </div>
+                            </div>
 
-                {/* Route Waypoint Indicator Bottom Bar */}
-                <div className="absolute bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-md p-3.5 rounded-xl border border-slate-700/80 shadow-2xl flex flex-wrap items-center justify-between gap-4">
-                    <div className="flex items-center gap-4 text-xs font-mono">
-                        <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
-                            <span className="text-slate-400">ORIGIN:</span>
-                            <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded">{origin}</span>
+                            <div className="mt-3 pt-3 border-t border-slate-800 flex items-center gap-2 text-xs">
+                                <MapPin className="w-4 h-4 text-red-500 flex-shrink-0" />
+                                <div className="truncate">
+                                    <span className="text-[10px] text-slate-400 block font-mono">LAST REPORTED LOCATION</span>
+                                    <span className="font-medium text-slate-200">{displayLocation}</span>
+                                </div>
+                            </div>
                         </div>
-                        <span className="text-slate-600">----------------</span>
-                        <div className="flex items-center gap-2">
-                            <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
-                            <span className="text-slate-400">DESTINATION:</span>
-                            <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded">{destination}</span>
-                        </div>
-                    </div>
 
-                    <a
-                        href={`https://www.google.com/maps?q=${latNum},${lngNum}`}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-xs text-red-400 hover:text-red-300 font-semibold flex items-center gap-1 transition-colors"
-                    >
-                        Open in Google Maps <ExternalLink className="w-3 h-3" />
-                    </a>
-                </div>
+                        {/* Route Waypoint Indicator Bottom Bar */}
+                        <div className="absolute bottom-4 left-4 right-4 bg-slate-900/90 backdrop-blur-md p-3.5 rounded-xl border border-slate-700/80 shadow-2xl flex flex-wrap items-center justify-between gap-4">
+                            <div className="flex items-center gap-4 text-xs font-mono">
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-emerald-500"></span>
+                                    <span className="text-slate-400">ORIGIN:</span>
+                                    <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded">{origin}</span>
+                                </div>
+                                <span className="text-slate-600">----------------</span>
+                                <div className="flex items-center gap-2">
+                                    <span className="w-2.5 h-2.5 rounded-full bg-red-500"></span>
+                                    <span className="text-slate-400">DESTINATION:</span>
+                                    <span className="font-bold text-white bg-slate-800 px-2 py-0.5 rounded">{destination}</span>
+                                </div>
+                            </div>
+
+                            <a
+                                href={`https://www.google.com/maps?q=${latNum},${lngNum}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-xs text-red-400 hover:text-red-300 font-semibold flex items-center gap-1 transition-colors"
+                            >
+                                Open in Google Maps <ExternalLink className="w-3 h-3" />
+                            </a>
+                        </div>
+                    </>
+                )}
             </div>
         </div>
     );
